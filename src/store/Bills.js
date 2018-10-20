@@ -4,7 +4,6 @@ const Bill = {
   id: null,
   name: '',
   category: '',
-  income: .00,
   amount: .00,
   percent: .00,
   limit: .00
