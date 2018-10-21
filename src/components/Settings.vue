@@ -6,13 +6,21 @@
               <h4>Настройки</h4>
           </div>
       </section>
-      <h5>База данных</h5>
-      <section class="row" v-if="!dbFile">
-          <div class="col">
-              <button type="button" class="btn btn-primary" @click="dbSetup">Установить базу данных</button>
+      <h5 class="mt-4">База данных</h5>
+      <section class="row mt-4" v-if="!dbFile">
+          <div class="col-1">
+              <label for="currency">Валюта</label>
           </div>
           <div class="col">
-              <button type="button" class="btn btn-secondary" @click="dbOpen">Открыть существующую</button>
+              <select id="currency" class="form-control" v-model="currency">
+                  <option v-for="item in currencyList" :value="item">{{item}}</option>
+              </select>
+          </div>
+          <div class="col">
+              <button type="button" class="btn btn-primary col" @click="dbSetup">Установить базу данных</button>
+          </div>
+          <div class="col">
+              <button type="button" class="btn btn-secondary col" @click="dbOpen">Открыть существующую</button>
           </div>
       </section>
       <section v-if="dbFile">
@@ -31,6 +39,17 @@
               </div>
           </div>
       </section>
+      <h5 class="mt-4">Язык</h5>
+      <section class="row mt-4">
+          <div class="col-lg-4">
+              <select class="form-control col" v-model="language">
+                  <option v-for="item in languageList" :value="item">{{item}}</option>
+              </select>
+          </div>
+          <div class="col">
+              <button type="button" class="btn btn-secondary">Применить</button>
+          </div>
+      </section>
     </div>
 </template>
 
@@ -44,7 +63,11 @@ export default {
     return {
       dbFile: '',
       billsCount: 0,
-      historyRecords: 0
+      historyRecords: 0,
+      currency: 'RUR',
+      currencyList: ['RUR', 'USD'],
+      language: 'RU',
+      languageList: ['RU']
     };
   },
   components: {
@@ -62,6 +85,8 @@ export default {
       Db.createNew().then((fileName) => {
         console.debug('created', fileName);
         this.dbFile = fileName;
+        this.$store.dispatch('loadDb').then(() => {
+        });
       }).catch((err) => {
         console.debug(err);
       });
@@ -70,6 +95,8 @@ export default {
       Db.openExisted().then((db) => {
         console.debug('loaded', db);
         this.dbFile = db.filePath;
+        this.$store.dispatch('loadDb').then(() => {
+        });
       }).catch((err) => {
         console.debug(err);
       });

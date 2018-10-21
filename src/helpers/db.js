@@ -9,7 +9,9 @@ const localStorageConsts = {
 
 const DbStore = {
   bills: [],
-  history: []
+  history: [],
+  currency: 'RUR',
+  updatedAt: null
 };
 
 const LocalStorageAppConf = {
@@ -43,6 +45,7 @@ const Db = {
           extensions: ['json']
         }]
       };
+      DbStore.updatedAt = new Date();
       const dbStr = JSON.stringify(DbStore);
       dialog.showSaveDialog(options, (fileName) => {
         if (fileName === undefined) {
@@ -149,6 +152,27 @@ const Db = {
   loadDb: function() {
     const conf = Db.getAppConf();
     return Db.parseJsonFile(conf.dbJsonSrc);
+  },
+
+  /**
+   * store bills to file
+   */
+  saveBills: function(bills) {
+    return this.loadDb().then((data) => {
+      data.bills = bills;
+      DbStore.updatedAt = new Date();
+      const dbStr = JSON.stringify(data);
+      const conf = Db.getAppConf();
+      fs.writeFile(conf.dbJsonSrc, dbStr, (err) => {
+        if (err) {
+          console.error('saveBills error', err);
+        } else {
+          console.debug('saveBills', 'saved');
+        }
+      });
+    }).catch((err) => {
+      console.error('saveBills error', err);
+    });
   }
 };
 
