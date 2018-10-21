@@ -26,17 +26,27 @@ const Bills = {
     getTotalAmount: (state) => {
       let total = 0;
       for (let i in state.items) {
-        total += _.round(state.items[i].amount,2);
+        total += _.round(state.items[i].amount, 2);
       }
       return total;
     },
     getCurrency: (state) => {
       return state.currency;
+    },
+    getBillsWithPercent: (state) => {
+      let bills = [];
+      for (let i in state.items) {
+        if (state.items[i].percent > 0) {
+          bills.push(state.items[i]);
+        }
+      }
+      return bills;
     }
   },
   actions: {
     loadDb: (state) => {
       return Db.loadDb().then((data) => {
+        state.commit('resetBills');
         if (data.bills === undefined) {
           throw Error('No bills structure in DB');
         }
@@ -60,6 +70,9 @@ const Bills = {
     }
   },
   mutations: {
+    resetBills: (state) => {
+      state.items = [];
+    },
     addBill: (state, payload) => {
       state.items.push(payload);
     },
@@ -79,6 +92,14 @@ const Bills = {
     },
     setCurrency: (state, payload) => {
       state.currency = payload;
+    },
+    deleteBill: (state, payload) => {
+      for (let i in state.items) {
+        if (state.items[i].id === payload.id) {
+          state.items.splice(i, 1);
+          break;
+        }
+      }
     }
   }
 }

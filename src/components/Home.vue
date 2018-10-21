@@ -3,6 +3,9 @@
   <navigation current="home"></navigation>
   <section>
     <ul class="nav nav-pills nav-justified w-100">
+      <li class="nav-item pr-2">
+        <a class="nav-link shadow-sm" :class="{active: selectedCategory === 'all'}" href="#" @click="onClickFilterByCategory('all')">Все категории</a>
+      </li>
       <li class="nav-item pr-2" v-for="item in this.$store.getters.getBillCategories">
         <a class="nav-link shadow-sm" :class="{active: item === selectedCategory}" href="#" @click="onClickFilterByCategory(item)">{{item}}</a>
       </li>
@@ -55,11 +58,16 @@
             </div>
           </a>
         </div>
-        <button type="button" v-if="!addBillForm" name="button" class="btn btn-secondary btn-sm" @click="onClickAddBill">Добавить счет</button>
       </div>
       <div class="col-lg-6">
-          <h4>Общая сумма накоплений: <span class="badge badge-secondary">{{Number(this.$store.getters.getTotalAmount).toFixed(2)}} {{currency}}</span></h4>
-          <p v-if="selectedCategory">Сумма накоплений в данной категории: <span class="badge badge-secondary">{{Number(getCategoryAmount()).toFixed(2)}} {{currency}}</span></p>
+        <h4>Общая сумма накоплений: <span class="badge badge-success">{{Number(this.$store.getters.getTotalAmount).toFixed(2)}} {{currency}}</span></h4>
+        <p v-if="selectedCategory && selectedCategory!=='all'" class="mt-3">Сумма накоплений в данной категории: <span class="badge badge-secondary">{{Number(getCategoryAmount()).toFixed(2)}} {{currency}}</span></p>
+        <div v-if="selectedCategory && selectedCategory!=='all'" class="progress mt-2">
+          <div class="progress-bar" role="progressbar" :style="{width: calcCategoryPercentOfTotal()+'%'}" :aria-valuenow="calcCategoryPercentOfTotal()" aria-valuemin="0" aria-valuemax="100">
+            {{calcCategoryPercentOfTotal()}}% - доля от всех накоплений
+          </div>
+        </div>
+        <button type="button" v-if="!addBillForm && selectedCategory!=='all'" name="button" class="btn btn-secondary btn-sm mt-2" @click="onClickAddBill">Добавить счет</button>
       </div>
     </div>
     <div class="row mt-3" v-if="addBillForm">
@@ -87,6 +95,7 @@
           </div>
           <button type="button" class="btn btn-primary" v-if="!billForm.isEdit" @click="onClickSubmitBill">Добавить счет</button>
           <button type="button" class="btn btn-primary" v-if="billForm.isEdit" @click="onClickUpdateBill">Обновить счет</button>
+          <button type="button" class="btn btn-secondary" v-if="billForm.isEdit" @click="onClickDeleteBill">Удалить счет</button>
           <button type="button" class="btn btn-secondary" @click="onClickCancelEditBill">Отмена</button>
         </form>
       </div>
@@ -105,7 +114,7 @@ export default {
     return {
       addCategoryForm: false,
       categoryName: '',
-      selectedCategory: '',
+      selectedCategory: 'all',
       bills: [],
       addBillForm: false,
       billForm: {
@@ -125,6 +134,7 @@ export default {
     } else {
       this.$store.dispatch('loadDb').then(() => {
         this.currency = this.$store.getters.getCurrency;
+        this.getBillByCategory();
       });
     }
   },
@@ -168,60 +178,71 @@ export default {
       this.resetBillForm();
     },
     onClickEditBill: function(item) {
-        this.addBillForm = true;
-        this.billForm.id = item.id;
-        this.billForm.name = item.name;
-        this.billForm.amount = item.amount;
-        this.billForm.limit = item.limit;
-        this.billForm.percent = item.percent;
-        this.billForm.isEdit = true;
-        console.debug('onClickEditBill', item);
+      this.addBillForm = true;
+      this.billForm.id = item.id;
+      this.billForm.name = item.name;
+      this.billForm.amount = item.amount;
+      this.billForm.limit = item.limit;
+      this.billForm.percent = item.percent;
+      this.billForm.isEdit = true;
+      console.debug('onClickEditBill', item);
     },
     onClickUpdateBill: function() {
-        this.$store.commit('updateBill', {
-          id: this.billForm.id,
-          name: this.billForm.name,
-          category: this.selectedCategory,
-          amount: parseFloat(this.billForm.amount),
-          percent: parseFloat(this.billForm.percent),
-          limit: parseFloat(this.billForm.limit)
-        });
-        this.$store.dispatch('saveBills');
-        this.getBillByCategory();
-        this.addBillForm = false;
-        this.resetBillForm();
+      this.$store.commit('updateBill', {
+        id: this.billForm.id,
+        name: this.billForm.name,
+        category: this.selectedCategory,
+        amount: parseFloat(this.billForm.amount),
+        percent: parseFloat(this.billForm.percent),
+        limit: parseFloat(this.billForm.limit)
+      });
+      this.$store.dispatch('saveBills');
+      this.getBillByCategory();
+      this.addBillForm = false;
+      this.resetBillForm();
     },
     onClickCancelEditBill: function() {
-        this.addBillForm = false;
-        this.resetBillForm();
+      this.addBillForm = false;
+      this.resetBillForm();
+    },
+    onClickDeleteBill: function() {
+      this.$store.commit('deleteBill', {
+        id: this.billForm.id
+      });
+      this.$store.dispatch('saveBills');
+      this.getBillByCategory();
+      this.addBillForm = false;
+      this.resetBillForm();
     },
     resetBillForm: function() {
-        this.billForm.id = null;
-        this.billForm.name = '';
-        this.billForm.amount = 0;
-        this.billForm.limit = 0;
-        this.billForm.percent = 0;
-        this.billForm.isEdit = false;
+      this.billForm.id = null;
+      this.billForm.name = '';
+      this.billForm.amount = 0;
+      this.billForm.limit = 0;
+      this.billForm.percent = 0;
+      this.billForm.isEdit = false;
     },
     getBillByCategory: function() {
       this.bills = [];
       for (let i in this.$store.getters.getBillsItems) {
-        if (this.$store.getters.getBillsItems[i].category === this.selectedCategory) {
+        if (this.$store.getters.getBillsItems[i].category === this.selectedCategory || this.selectedCategory === 'all') {
           this.bills.push(this.$store.getters.getBillsItems[i]);
         }
       }
+      this.addBillForm = false;
+      this.resetBillForm();
     },
     getCategoryAmount: function() {
-        let amount = 0;
-        if (!this.selectedCategory) {
-            return amount;
-        }
-        for (let i in this.$store.getters.getBillsItems) {
-          if (this.$store.getters.getBillsItems[i].category === this.selectedCategory) {
-            amount += _.round(this.$store.getters.getBillsItems[i].amount, 2);
-          }
-        }
+      let amount = 0;
+      if (!this.selectedCategory) {
         return amount;
+      }
+      for (let i in this.$store.getters.getBillsItems) {
+        if (this.$store.getters.getBillsItems[i].category === this.selectedCategory) {
+          amount += _.round(this.$store.getters.getBillsItems[i].amount, 2);
+        }
+      }
+      return amount;
     },
     calcPercent: function(item) {
       if (item.limit === 0) {
@@ -235,6 +256,14 @@ export default {
         return 100;
       }
       return _.round(item.amount * 100 / total, 2);
+    },
+    calcCategoryPercentOfTotal: function() {
+      const amount = this.getCategoryAmount();
+      const total = this.$store.getters.getTotalAmount;
+      if (total === 0) {
+        return 100;
+      }
+      return _.round(amount * 100 / total, 2);
     }
   }
 }
