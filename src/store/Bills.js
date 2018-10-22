@@ -67,6 +67,29 @@ const Bills = {
     },
     saveBills: (state) => {
       return Db.saveBills(state.getters.getBillsItems);
+    },
+    allocateMoney: (state, payload) => {
+      state.commit('addHistoryIncome', {
+        amount: payload.amount
+      });
+      for (let i in state.getters.getBillsWithPercent) {
+        let item = state.getters.getBillsWithPercent[i];
+        let income = _.round(item.percent * payload.amount / 100, 2);
+        item.amount = _.round(parseFloat(item.amount) + parseFloat(income), 2);
+        state.commit('updateBill', item);
+        state.commit('addHistoryTransfer', {
+          bill: item.id,
+          amount: income,
+          direction: 'in'
+        });
+        state.commit('addHistoryBalance', {
+          bill: item.id,
+          amount: item.amount
+        });
+      }
+      state.dispatch('saveBills').then(()=>{
+        state.dispatch('saveHistory');
+      });
     }
   },
   mutations: {

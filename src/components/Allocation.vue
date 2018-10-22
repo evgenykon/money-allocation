@@ -11,7 +11,7 @@
                         <input type="text" class="form-control" v-model.number="incomeAmount">
                       </div>
                       <div class="col-sm-2">
-                        <button type="button" class="btn btn-primary" >Внести</button>
+                        <button type="button" class="btn btn-primary" @click="onClickAllocateMoney" v-if="totalPercent === 100">Внести</button>
                       </div>
                     </div>
                   </form>
@@ -31,7 +31,7 @@
                               <span class="mr-3 badge badge-secondary">{{Number(item.percent).toFixed(2)}}%</span>
                               <span class="mr-3">{{Number(item.amount).toFixed(2)}} {{currency}}</span>
                               <span class="text-success mr-3">+{{calcIncomeAmountForBill(item)}} {{currency}}</span>
-                              <span class="text-primary">= {{calcResultAmountForBill(item)}} {{currency}}</span>
+                              <span class="text-primary">= {{Number(calcResultAmountForBill(item)).toFixed(2)}} {{currency}}</span>
                           </div>
                       </li>
                 </ul>
@@ -79,6 +79,13 @@ export default {
       },
       calcResultAmountForBill: function(item) {
           return _.round(item.amount + this.calcIncomeAmountForBill(item),2);
+      },
+      onClickAllocateMoney: function() {
+          this.$store.dispatch('allocateMoney', {
+              amount: this.incomeAmount
+          }).then(() => {
+            this.incomeAmount = 0;
+          });
       }
   }
 }

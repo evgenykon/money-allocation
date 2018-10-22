@@ -9,7 +9,11 @@ const localStorageConsts = {
 
 const DbStore = {
   bills: [],
-  history: [],
+  history: {
+    incomes: [],
+    transfers: [],
+    balances: []
+  },
   currency: 'RUR',
   updatedAt: null
 };
@@ -33,6 +37,60 @@ const Db = {
   },
 
   /**
+   * make a timeout to wait something
+   */
+  sleep: (timeout) => {
+    const stop = new Date().getTime() + timeout;
+    return new Promise((resolve, reject) => {
+      let interval = setInterval(() => {
+        if (new Date().getTime() > stop) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 1000);
+    });
+  },
+
+  /**
+   * lock with waiting
+   */
+  lock: () => {
+    const maxTimeout = new Date().getTime() + 10000; // 10 seconds from current time
+    /**
+     * waiting
+     */
+    const waitWhileUnlocked = (callback) => {
+      if (maxTimeout < new Date().getTime()) {
+        throw Error('Waiting aborted during max timeout');
+      }
+      if (window.Config.lockFlag === true) {
+        Db.sleep(1000).then(() => {
+          waitWhileUnlocked(callback);
+        });
+
+      } else {
+        callback();
+      }
+    }
+    return new Promise((resolve, reject) => {
+      waitWhileUnlocked(() => {
+        window.Config.lockFlag = true;
+        resolve();
+      });
+    });
+  },
+
+  /**
+   * unlock
+   */
+  unlock: () => {
+    return new Promise((resolve, reject) => {
+      window.Config.lockFlag = false;
+      resolve();
+    });
+  },
+
+  /**
    * create new database
    */
   createNew: () => {
@@ -45,21 +103,32 @@ const Db = {
           extensions: ['json']
         }]
       };
-      DbStore.updatedAt = new Date();
-      const dbStr = JSON.stringify(DbStore);
+      const dbStr = JSON.stringify({
+        bills: [],
+        history: {
+          incomes: [],
+          transfers: [],
+          balances: []
+        },
+        currency: 'RUR',
+        updatedAt: new Date()
+      });
       dialog.showSaveDialog(options, (fileName) => {
         if (fileName === undefined) {
           reject('file not selected');
           return;
         }
-        fs.writeFile(fileName, dbStr, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            LocalStorageAppConf.dbJsonSrc = fileName;
-            localStorage.setItem(localStorageConsts.conf, JSON.stringify(LocalStorageAppConf))
-            resolve(fileName);
-          }
+        Db.lock().then(() => {
+          fs.writeFile(fileName, dbStr, (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              LocalStorageAppConf.dbJsonSrc = fileName;
+              localStorage.setItem(localStorageConsts.conf, JSON.stringify(LocalStorageAppConf))
+              Db.unlock();
+              resolve(fileName);
+            }
+          });
         });
       });
     });
@@ -120,6 +189,7 @@ const Db = {
           return;
         };
         let parsedData = JSON.parse(data);
+        console.debug('parseJsonFile', parsedData);
         resolve(parsedData);
       });
     });
@@ -160,18 +230,45 @@ const Db = {
   saveBills: function(bills) {
     return this.loadDb().then((data) => {
       data.bills = bills;
-      DbStore.updatedAt = new Date();
+      data.updatedAt = new Date();
       const dbStr = JSON.stringify(data);
       const conf = Db.getAppConf();
-      fs.writeFile(conf.dbJsonSrc, dbStr, (err) => {
-        if (err) {
-          console.error('saveBills error', err);
-        } else {
-          console.debug('saveBills', 'saved');
-        }
+      Db.lock().then(() => {
+        fs.writeFile(conf.dbJsonSrc, dbStr, (err) => {
+          Db.unlock();
+          if (err) {
+            console.error('saveBills error', err);
+          } else {
+            console.debug('saveBills', 'saved');
+          }
+        });
       });
     }).catch((err) => {
       console.error('saveBills error', err);
+    });
+  },
+
+  /**
+   * store history to file
+   */
+  saveHistory: function(history) {
+    return this.loadDb().then((data) => {
+      data.history = history;
+      data.updatedAt = new Date();
+      const dbStr = JSON.stringify(data);
+      const conf = Db.getAppConf();
+      Db.lock().then(() => {
+        fs.writeFile(conf.dbJsonSrc, dbStr, (err) => {
+          Db.unlock();
+          if (err) {
+            console.error('saveHistory error', err);
+          } else {
+            console.debug('saveHistory', 'saved');
+          }
+        });
+      });
+    }).catch((err) => {
+      console.error('saveHistory error', err);
     });
   }
 };

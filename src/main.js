@@ -7,6 +7,12 @@ import store from './store'
 
 Vue.config.productionTip = false
 
+const Config = {};
+if (window === undefined) {
+  window = {};
+}
+window.Config = Config;
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
