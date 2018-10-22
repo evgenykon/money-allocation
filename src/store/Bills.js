@@ -90,6 +90,34 @@ const Bills = {
       state.dispatch('saveBills').then(()=>{
         state.dispatch('saveHistory');
       });
+    },
+    updateBillData: (state, payload) => {
+      const getBillById = (id) => {
+        for (let i in state.getters.getBillsItems) {
+          let item = state.getters.getBillsItems[i];
+          if (item.id === id) {
+            return item;
+          }
+        }
+      }
+      const oldBill = getBillById(payload.id);
+      state.commit('updateBill', payload);
+      if (oldBill.amount !== payload.amount) {
+        state.commit('addHistoryTransfer', {
+          bill: payload.id,
+          amount: _.round( Math.abs(payload.amount - oldBill.amount) ),
+          direction: payload.amount > oldBill.amount ? 'in' : 'out'
+        });
+        state.commit('addHistoryBalance', {
+          bill: payload.id,
+          amount: payload.amount
+        });
+      }
+      state.dispatch('saveBills').then(()=>{
+        if (oldBill.amount !== payload.amount) {
+          state.dispatch('saveHistory');
+        }
+      });
     }
   },
   mutations: {

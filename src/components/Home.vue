@@ -188,18 +188,18 @@ export default {
       console.debug('onClickEditBill', item);
     },
     onClickUpdateBill: function() {
-      this.$store.commit('updateBill', {
+      this.$store.dispatch('updateBillData', {
         id: this.billForm.id,
         name: this.billForm.name,
         category: this.selectedCategory,
         amount: parseFloat(this.billForm.amount),
         percent: parseFloat(this.billForm.percent),
         limit: parseFloat(this.billForm.limit)
+      }).then(() => {
+        this.getBillByCategory();
+        this.addBillForm = false;
+        this.resetBillForm();
       });
-      this.$store.dispatch('saveBills');
-      this.getBillByCategory();
-      this.addBillForm = false;
-      this.resetBillForm();
     },
     onClickCancelEditBill: function() {
       this.addBillForm = false;
