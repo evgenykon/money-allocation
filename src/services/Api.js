@@ -90,6 +90,21 @@ class Api {
         const response = await this.getAxiosAuth(token, uid).get('/bills', axiosConfig);
         return this.parseResponse(response);
     }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     */
+    async createBill(token, uid, name) {
+        const response = await this.getAxiosAuth(token, uid).put('/bill', {
+            name: name
+        });
+        return this.parseResponse(response);
+    }
+
+    async createRevision() {
+
+    }
 }
 
 export default new Api;

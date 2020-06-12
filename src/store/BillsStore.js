@@ -12,8 +12,8 @@ const BillsStore = {
         getBills(state) {
             return state.bills;
         },
-        getCurrentBill() {
-
+        getCurrentBill(state) {
+            return state.currentBill;
         },
         getRevisions() {
 
@@ -31,22 +31,47 @@ const BillsStore = {
         },
         setRevisions() {
 
+        },
+        setCurrent(state, payload) {
+            state.currentBill = payload;
         }
     },
     actions: {
         async loadBills(state) {
             const response = await Api.loadBills(state.getters.getToken, state.getters.getUid);
-            console.debug('loadBills response', response);
             state.commit('setBills', response.bills);
         },
-        setCurrent() {
-
+        async setCurrent(state, payload) {
+            if (state.getters.getBills.length === 0) {
+                await state.dispatch('loadBills');
+            }
+            let bill = state.getters.getBills.filter(item => item.id === payload.id);
+            if (bill.length !== 1) {
+                throw new Error('Current not defined');
+            }
+            state.commit('setCurrent', bill[0]);
         },
         loadRevisions() {
 
         },
-        createBill() {
-
+        async createBill(state, payload) {
+            console.debug('s.createBill', payload);
+            const response = await Api.createBill(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.name
+            );
+            if (!response.result) {
+                throw Error('Unable to create bill');
+            }
+            if (isNaN(parseFloat(payload.initAmount))) {
+                throw Error('Amount is not a number');
+            }
+            /*response = await Api.createBill(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.name
+            );*/
         },
         updateBill() {
 

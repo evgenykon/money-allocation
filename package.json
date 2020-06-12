@@ -12,7 +12,6 @@
     "axios": "^0.19.2",
     "core-js": "^3.6.5",
     "crypto": "^1.0.1",
-    "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vue-timers": "^2.0.4",
@@ -21,6 +20,7 @@
     "vuex-persistedstate": "^3.0.1"
   },
   "devDependencies": {
+    "@mdi/font": "^5.3.45",
     "@vue/cli-plugin-babel": "~4.4.0",
     "@vue/cli-plugin-eslint": "~4.4.0",
     "@vue/cli-plugin-router": "^4.4.1",

@@ -7,6 +7,7 @@
     >
       <v-list dense>
 
+        <side-bar-item icon="lock" text="Language" v-on:click="onClickLanguage"></side-bar-item>
         <side-bar-item icon="lock" text="Logout" v-on:click="onClickLogout"></side-bar-item>
         
       </v-list>
@@ -22,12 +23,45 @@
 
     <v-main>
       <v-container fluid>
-      
-        <v-row align="start" justify="center">
-          <v-col cols="12" class="text-left">
-            {{this.$store.getters.getBills}}
+        <v-row align="start" justify="start">
+          <v-col cols="4" class="text-left">
+            <v-btn-toggle
+              dense
+              dark
+              multiple
+            >
+              <v-btn title="Add account" @click="onClickAddAccount">
+                <v-icon>mdi-account-cash</v-icon>
+              </v-btn>
+              <v-btn title="Show chart" :disabled="this.$store.getters.getBills.length === 0">
+                <v-icon>mdi-chart-areaspline</v-icon>
+              </v-btn>
+              <v-btn title="Autocharge" :disabled="this.$store.getters.getBills.length === 0">
+                <v-icon>mdi-cash-multiple</v-icon>
+              </v-btn>
+            </v-btn-toggle>
           </v-col>
         </v-row>
+        
+        <v-row align="start" justify="center">
+          <v-col cols="12" class="text-left">
+            <bill-list :list="this.$store.getters.getBills"></bill-list>
+          </v-col>
+        </v-row>
+
+
+        <v-row align="start" justify="center">
+          <v-col cols="8" class="text-right pt-4">
+            Total
+          </v-col>
+          <v-col cols="4" class="pr-4">
+            <v-chip text-color="white" class="mr-4 fluid">
+              <v-icon>mdi-currency-rub</v-icon>
+              6 000.20
+            </v-chip>
+          </v-col>
+        </v-row>
+
       </v-container>
     </v-main>
     <v-footer app>
@@ -46,45 +80,47 @@
 </template>
 
 <script>
-  //import Contacts from "../components/Contacts.vue"; 
+  import {mixin as VueTimers} from 'vue-timers';
   import SideBarItem from '../components/SideBarItem.vue';
-  //import Vue from 'vue';
-  //import VueTimers from 'vue-timers';
-  //Vue.use(VueTimers);
+  import BillList from '../components/BillsList.vue';
 
   export default {
     components: {
-        SideBarItem
+        SideBarItem, BillList
     },
-    //mixins: [VueTimers],
-    /*timers: {
+    mixins: [VueTimers],
+    timers: {
       onClickLogout: { time: 3000, autostart: false }
-    },*/
-    props: {
     },
     data: () => ({
       drawer: null,
-        errorMessage: {
-          flag: false,
-          text: ''
-        }
+      errorMessage: {
+        flag: false,
+        text: ''
+      }
     }),
     mounted: function() {
       this.drawer = null;
-      //this.$store.dispatch('loadBills').catch(this.onError);
+      this.$store.dispatch('loadBills').catch(this.onError);
     },
     methods: {
       onError(e) {
         this.errorMessage.flag = true;
         this.errorMessage.text = e.message;
         if (e.message === 'Token expired') {
-          //this.$timer.start('onClickLogout');
+          this.$timer.start('onClickLogout');
         }
+      },
+      onClickLanguage() {
+        this.$router.push({ name: 'Language' });
       },
       onClickLogout() {
         this.$store.dispatch('logout').then(() => {
           this.$router.push({ name: 'Home' })
         }).catch(console.error);
+      },
+      onClickAddAccount() {
+        this.$router.push({ name: 'Forms', params: { formId: 'addBill' } })
       }
     }
   }
