@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import IntroView from '../views/IntroView.vue';
 import AuthView from '../views/AuthView.vue';
+import MoneyHomeView from '../views/MoneyHomeView.vue';
 Vue.use(VueRouter)
 
 const routes = [
@@ -14,6 +15,11 @@ const routes = [
     path: '/auth',
     name: 'Auth',
     component: AuthView
+  },
+  {
+    path: '/money',
+    name: 'Money',
+    component: MoneyHomeView
   }
 ]
 

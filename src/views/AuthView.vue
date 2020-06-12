@@ -8,11 +8,11 @@
       <v-toolbar-title>Auth - Money Allocation</v-toolbar-title>
     </v-app-bar>
 
-    <v-content>
+    <v-main>
       <v-container fluid ref="container">
         <LoginForm :stored-email="$store.getters.getEmail" v-on:register="onSubmitRegister" v-on:login="onSubmitLogin"></LoginForm>
       </v-container>
-    </v-content>
+    </v-main>
 
     <v-snackbar
       v-model="flagShowErrorMessage"

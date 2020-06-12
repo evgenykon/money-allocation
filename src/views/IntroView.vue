@@ -8,9 +8,9 @@
       <v-toolbar-title>Money Allocation</v-toolbar-title>
     </v-app-bar>
 
-    <v-content>
+    <v-main>
       <LoadingScreen :status-message="loadingStatusMessage"></LoadingScreen>
-    </v-content>
+    </v-main>
 
   </v-app>
 
@@ -32,7 +32,7 @@ export default {
       this.$store.dispatch('checkConnection'),
       this.$store.dispatch('checkAuth')
     ]).then(() => {
-      this.$router.push({ name: 'Contacts' });
+      this.$router.push({ name: 'Money' });
     }).catch(() => {
       this.$router.push({ name: 'Auth' });
     });

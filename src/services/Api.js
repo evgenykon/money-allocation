@@ -12,6 +12,9 @@ const hashSomething = (str) => {
     return crypto.createHash('sha256').update(str).digest('hex');
 }
 
+/**
+ * 
+ */
 class Api {
     constructor() {
         if (process.env.NODE_ENV && process.env.NODE_ENV==='development') {
@@ -43,13 +46,10 @@ class Api {
         return response.data ? response.data.result : false;
     }
 
-    async checkAuth(token, uid) {
-        console.debug('BotApi.checkAuth', token, uid);
-        if (!token || !uid) {
-            throw Error('Unauthorized');
-        }
-        const response = await this.getAxiosAuth(token, uid).get('/user/me', axiosConfig);
-        console.debug('checkAuth', response);
+    /**
+     * @param {*} response 
+     */
+    parseResponse(response) {
         if (response && response.data && response.data.result) {
             return response.data;
         } else {
@@ -57,15 +57,21 @@ class Api {
         }
     }
 
+    async checkAuth(token, uid) {
+        console.debug('BotApi.checkAuth', token, uid);
+        if (!token || !uid) {
+            throw Error('Unauthorized');
+        }
+        const response = await this.getAxiosAuth(token, uid).get('/user/me', axiosConfig);
+        return this.parseResponse(response);
+    }
+
     async register(form) {
         if (!form.email || !form.name || !form.password) {
             throw Error('Some form fields is empty');
         }
         const response = await axios.put('/user/register', form);
-        if (!response.data || response.data.result === false) {
-            throw Error(response.data.message ? 'Server error: ' + response.data.message : 'API result is false');
-        }
-        return response.data;
+        return this.parseResponse(response);
     }
 
     async login(form) {
@@ -73,10 +79,16 @@ class Api {
             throw Error('Some form fields is empty');
         }
         const response = await axios.post('/user/login', form);
-        if (!response.data || response.data.result === false) {
-            throw Error(response.data.message ? 'Server error: ' + response.data.message : 'API result is false');
-        }
-        return response.data;
+        return this.parseResponse(response);
+    }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     */
+    async loadBills(token, uid) {
+        const response = await this.getAxiosAuth(token, uid).get('/bills', axiosConfig);
+        return this.parseResponse(response);
     }
 }
 
