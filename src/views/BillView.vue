@@ -23,13 +23,16 @@
                     dark
                     multiple
                     >
-                    <v-btn title="Add account" @click="onClickNewRevision" class="primary">
+                    <v-btn @click="onClickNewRevision">
                         New revision
                     </v-btn>
-                    <v-btn title="Show chart" @click="onClickDeleteBill">
-                        Delete bill
+                    <v-btn title="Transfer to another bill" :disabled="!$store.getters.getLastRevision || $store.getters.getBills.length < 2" @click="onClickDeclineLastRevision">
+                        Transfer
                     </v-btn>
-                    <v-btn title="Autocharge" :disabled="!$store.getters.getLastRevision" @click="onClickDeclineLastRevision">
+                    <v-btn @click="onClickDeleteBill" title="Delete this bill">
+                        Delete
+                    </v-btn>
+                    <v-btn :disabled="!$store.getters.getLastRevision || $store.getters.getRevisions.length === 1" @click="onClickDeclineLastRevision">
                         Decline last revision
                     </v-btn>
                 </v-btn-toggle>
@@ -49,7 +52,7 @@
                     </v-list-item>
                     <v-list-item v-if="$store.getters.getLastRevision">
                         <v-list-item-title>Last revision date</v-list-item-title>
-                        <v-list-item-title>{{$store.getters.getLastRevision.inserted_at}}</v-list-item-title>
+                        <v-list-item-title>{{formatDate($store.getters.getLastRevision.inserted_at)}}</v-list-item-title>
                     </v-list-item>
                     <v-list-item v-if="$store.getters.getLastRevision">
                         <v-list-item-title>Last revision amount</v-list-item-title>
@@ -57,6 +60,51 @@
                     </v-list-item>
                 </v-list>
             </v-col>
+        </v-row>
+
+        <v-row align="start" justify="center" v-if="$store.getters.getRevisions.length > 1">
+          <v-col>
+          <v-card
+            class="mt-4 mx-auto"
+          >
+            <v-sheet
+              class="v-sheet--offset mx-auto"
+              elevation="12"
+            >
+              <v-sparkline
+                :labels="chartLabels"
+                :value="chartValues"
+                :gradient="['#00c6ff', '#F0F', '#FF0']"
+                gradient-direction="top"
+                line-width="1"
+                labelSize="3"
+                radius="10"
+                padding="8"
+              ></v-sparkline>
+            </v-sheet>
+
+          </v-card>
+</v-col>
+        </v-row>
+
+        <v-row>
+          <v-col  cols="10">
+            <v-list class="transparent">
+              <v-subheader>Revisions</v-subheader>
+              <v-list-item  >
+                  <v-list-item-title>id</v-list-item-title>
+                  <v-list-item-title>date</v-list-item-title>
+                  <v-list-item-title>charged</v-list-item-title>
+                  <v-list-item-title>balance</v-list-item-title>
+              </v-list-item>
+              <v-list-item dense v-for="item in $store.getters.getRevisions" :key="item.id" >
+                  <v-list-item-title>{{item.id}}</v-list-item-title>
+                  <v-list-item-title>{{formatDate(item.inserted_at)}}</v-list-item-title>
+                  <v-list-item-title>{{item.charge_amount}}</v-list-item-title>
+                  <v-list-item-title>{{item.balance_amount}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-col>
         </v-row>
 
       </v-container>
@@ -86,6 +134,14 @@ export default {
             text: ''
         }
     }),
+    computed: {
+      chartValues() {
+        return this.$store.getters.getRevisions.map(item => parseFloat(item.balance_amount));
+      },
+      chartLabels() {
+        return this.$store.getters.getRevisions.map(item => item.balance_amount);
+      }
+    },
     mounted: function() {
         this.id = this.$router.currentRoute.params.id;
         if (!this.id) {
@@ -124,6 +180,10 @@ export default {
             this.$router.push({ name: 'Home' });
         })
         .catch(this.onError);
+      },
+      formatDate(dateStr) {
+        let dt = new Date(dateStr);
+        return dt.toLocaleString();
       },
       onError(e) {
         this.errorMessage.flag = true;
