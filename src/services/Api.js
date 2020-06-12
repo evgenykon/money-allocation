@@ -145,6 +145,21 @@ class Api {
         const response = await this.getAxiosAuth(token, uid).delete('/bill/' + billId + '/revision');
         return this.parseResponse(response);
     }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} sourceBillId 
+     * @param {*} targetBillId 
+     * @param {*} amount 
+     */
+    async transfer(token, uid, sourceBillId, targetBillId, amount) {
+        const response = await this.getAxiosAuth(token, uid)
+            .post('/bill/transfer/' + sourceBillId + '/' + targetBillId + '/', {
+                amount: amount
+            });
+        return this.parseResponse(response);
+    }
 }
 
 export default new Api;

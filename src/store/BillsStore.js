@@ -74,8 +74,9 @@ const BillsStore = {
                 throw Error('Amount is not a number');
             }
         },
-        updateBill() {
 
+        updateBill() {
+            //@todo
         },
 
         /**
@@ -126,8 +127,19 @@ const BillsStore = {
                 billId: payload.billId
             });
         },
-        transfer() {
 
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async transfer(state, payload) {
+            await Api.transfer(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.sourceBill.id,
+                payload.targetBill,
+                payload.transferAmount
+            );
         }
     }
 }

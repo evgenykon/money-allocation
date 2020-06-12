@@ -26,7 +26,7 @@
                     <v-btn @click="onClickNewRevision">
                         New revision
                     </v-btn>
-                    <v-btn title="Transfer to another bill" :disabled="!$store.getters.getLastRevision || $store.getters.getBills.length < 2" @click="onClickDeclineLastRevision">
+                    <v-btn title="Transfer to another bill" :disabled="!$store.getters.getLastRevision || $store.getters.getBills.length < 2" @click="onClickTransfer">
                         Transfer
                     </v-btn>
                     <v-btn @click="onClickDeleteBill" title="Delete this bill">
@@ -47,16 +47,16 @@
                         <v-list-item-title>{{$store.getters.getCurrentBill.id}}</v-list-item-title>
                     </v-list-item>
                     <v-list-item v-if="$store.getters.getLastRevision">
-                        <v-list-item-title>Balance</v-list-item-title>
-                        <v-list-item-title>{{$store.getters.getLastRevision.balance_amount}}</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item v-if="$store.getters.getLastRevision">
                         <v-list-item-title>Last revision date</v-list-item-title>
                         <v-list-item-title>{{formatDate($store.getters.getLastRevision.inserted_at)}}</v-list-item-title>
                     </v-list-item>
                     <v-list-item v-if="$store.getters.getLastRevision">
                         <v-list-item-title>Last revision amount</v-list-item-title>
                         <v-list-item-title>{{$store.getters.getLastRevision.charge_amount}}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="$store.getters.getLastRevision">
+                        <v-list-item-title>Balance</v-list-item-title>
+                        <v-list-item-title :class="{'success--text': $store.getters.getLastRevision.balance_amount > 0, 'red--text': $store.getters.getLastRevision.balance_amount < 0}">{{$store.getters.getLastRevision.balance_amount}}</v-list-item-title>
                     </v-list-item>
                 </v-list>
             </v-col>
@@ -165,7 +165,11 @@ export default {
         this.$router.push({ name: 'Home' });
       },
       onClickNewRevision() {
-          this.$router.push({ name: 'Forms', params: { formId: 'addRevision', billId: this.id } })
+          this.$router.push({ name: 'Forms', params: { 
+            formId: 'addRevision', 
+            billId: this.id,
+            balance: this.$store.getters.getLastRevision ? this.$store.getters.getLastRevision.balance_amount : 0
+          } })
       },
       onClickDeclineLastRevision() {
         this.$store.dispatch('declineLastRevision', {
@@ -180,6 +184,17 @@ export default {
             this.$router.push({ name: 'Home' });
         })
         .catch(this.onError);
+      },
+      onClickTransfer() {
+        this.$router.push({ 
+          name: 'Forms', 
+          params: { 
+            formId: 'transfer', 
+            sourceBill: this.$store.getters.getCurrentBill,
+            balance: this.$store.getters.getLastRevision.balance_amount,
+            bills: this.$store.getters.getBills.filter(item => item.id !== this.$store.getters.getCurrentBill.id)
+          } 
+        })
       },
       formatDate(dateStr) {
         let dt = new Date(dateStr);
