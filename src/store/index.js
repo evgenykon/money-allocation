@@ -1,15 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
 Vue.use(Vuex)
+import UserStore from './UserStore.js';
+import createPersistedState from "vuex-persistedstate";
 
 export default new Vuex.Store({
-  state: {
-  },
-  mutations: {
-  },
-  actions: {
-  },
+  plugins: [createPersistedState()],
   modules: {
+    UserStore
   }
 })
