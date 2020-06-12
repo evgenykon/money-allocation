@@ -9,23 +9,38 @@
 
     <v-main>
       <v-container fluid ref="container">
-      <form v-if="formId === 'addBill'">
-        <h3>Add new bill</h3>
-        <v-text-field 
-          v-model="addBill.name"
-          :error-messages="addBill.errors.name"
-          counter="100"
-          label="Name"
-          required
-        ></v-text-field>
-        <v-text-field 
-          v-model="addBill.initAmount"
-          :error-messages="addBill.errors.initAmount"
-          label="Initial amount"
-          type="number"
-          required
-        ></v-text-field>
-      </form>
+        <form v-if="formId === 'addBill'">
+          <h3>Add new bill</h3>
+          <v-text-field 
+            v-model="addBill.name"
+            :error-messages="addBill.errors.name"
+            counter="100"
+            label="Name"
+            required
+          ></v-text-field>
+          <v-text-field 
+            v-model="addBill.initAmount"
+            :error-messages="addBill.errors.initAmount"
+            label="Initial amount"
+            type="number"
+            required
+          ></v-text-field>
+        </form>
+        <form v-if="formId === 'addRevision'">
+          <h3>Add new revision</h3>
+          <v-text-field 
+            v-model="addRevision.billId"
+            label="Bill ID"
+            readonly
+          ></v-text-field>
+          <v-text-field 
+            v-model="addRevision.chargeAmount"
+            :error-messages="addRevision.errors.chargeAmount"
+            label="Charge amount"
+            type="number"
+            required
+          ></v-text-field>
+        </form>
       </v-container>
     </v-main>
 
@@ -48,12 +63,22 @@ export default {
             name: '',
             initAmount: ''
           }
+        },
+        addRevision: {
+          billId: null,
+          chargeAmount: 0,
+          errors: {
+            chargeAmount: ''
+          }
         }
     }),
     mounted: function() {
         this.formId = this.$router.currentRoute.params.formId;
         if (!this.formId) {
           this.$router.push({ name: 'Home' });
+        }
+        if (this.formId === 'addRevision') {
+          this.addRevision.billId = this.$router.currentRoute.params.billId;
         }
     },
     methods: {
@@ -63,6 +88,9 @@ export default {
       async onClickSubmit() {
         if (this.formId === 'addBill') {
           await this.$store.dispatch('createBill', this.addBill);
+        }
+        if (this.formId === 'addRevision') {
+          await this.$store.dispatch('createRevision', this.addRevision);
         }
         this.$router.push({ name: 'Home' });
       }

@@ -102,8 +102,48 @@ class Api {
         return this.parseResponse(response);
     }
 
-    async createRevision() {
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} billId 
+     */
+    async deleteBill(token, uid, billId) {
+        const response = await this.getAxiosAuth(token, uid).delete('/bill/' + billId);
+        return this.parseResponse(response);
+    }
 
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} billId 
+     * @param {*} chargeAmount 
+     */
+    async createRevision(token, uid, billId, chargeAmount) {
+        const response = await this.getAxiosAuth(token, uid).put('/bill/' + billId + '/revisions', {
+            charge_amount: chargeAmount
+        });
+        return this.parseResponse(response);
+    }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} billId 
+     * @param {*} fromDate 
+     */
+    async loadRevisions(token, uid, billId, fromDate) {
+        const response = await this.getAxiosAuth(token, uid).get('/bill/' + billId + '/revisions/' + fromDate, axiosConfig);
+        return this.parseResponse(response);
+    }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} billId 
+     */
+    async declineLastRevision(token, uid, billId) {
+        const response = await this.getAxiosAuth(token, uid).delete('/bill/' + billId + '/revision');
+        return this.parseResponse(response);
     }
 }
 

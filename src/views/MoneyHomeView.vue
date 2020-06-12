@@ -24,11 +24,12 @@
     <v-main>
       <v-container fluid>
         <v-row align="start" justify="start">
-          <v-col cols="4" class="text-left">
+          <v-col cols="6" class="text-left">
             <v-btn-toggle
               dense
               dark
               multiple
+              fluid
             >
               <v-btn title="Add account" @click="onClickAddAccount">
                 <v-icon>mdi-account-cash</v-icon>

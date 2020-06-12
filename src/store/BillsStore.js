@@ -15,32 +15,37 @@ const BillsStore = {
         getCurrentBill(state) {
             return state.currentBill;
         },
-        getRevisions() {
-
+        getRevisions(state) {
+            return state.revisions;
         },
-        getLastRevision() {
-
+        getLastRevision(state) {
+            return state.revisions.length > 0 ? state.revisions[state.revisions.length - 1] : null;
         }
     },
     mutations: {
         setBills(state, payload) {
             state.bills = payload;
         },
-        setCurrentBill() {
-
-        },
-        setRevisions() {
-
+        setRevisions(state, payload) {
+            state.revisions = payload;
         },
         setCurrent(state, payload) {
             state.currentBill = payload;
         }
     },
     actions: {
+        /**
+         * 
+         */
         async loadBills(state) {
             const response = await Api.loadBills(state.getters.getToken, state.getters.getUid);
             state.commit('setBills', response.bills);
         },
+
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
         async setCurrent(state, payload) {
             if (state.getters.getBills.length === 0) {
                 await state.dispatch('loadBills');
@@ -51,11 +56,12 @@ const BillsStore = {
             }
             state.commit('setCurrent', bill[0]);
         },
-        loadRevisions() {
 
-        },
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
         async createBill(state, payload) {
-            console.debug('s.createBill', payload);
             const response = await Api.createBill(
                 state.getters.getToken, 
                 state.getters.getUid, 
@@ -67,23 +73,58 @@ const BillsStore = {
             if (isNaN(parseFloat(payload.initAmount))) {
                 throw Error('Amount is not a number');
             }
-            /*response = await Api.createBill(
-                state.getters.getToken, 
-                state.getters.getUid, 
-                payload.name
-            );*/
         },
         updateBill() {
 
         },
-        deleteBill() {
 
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async deleteBill(state, payload) {
+            await Api.deleteBill(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.billId
+            );
         },
-        createRevision() {
 
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async loadRevisions(state, payload) {
+            const response = await Api.loadRevisions(state.getters.getToken, state.getters.getUid, payload.billId, '2020-06-01');
+            state.commit('setRevisions', response.revisions);
         },
-        cancelLastRevision() {
 
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async createRevision(state, payload) {
+            await Api.createRevision(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.billId,
+                payload.chargeAmount
+            );
+        },
+
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async declineLastRevision(state, payload) {
+            await Api.declineLastRevision(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.billId
+            );
+            await state.dispatch('loadRevisions', {
+                billId: payload.billId
+            });
         },
         transfer() {
 

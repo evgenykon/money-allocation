@@ -37,7 +37,6 @@ export default {
     },
     methods: {
       onClickBill(item) {
-        console.debug('onClickBill', item);
         this.$router.push({ name: 'Bill', params: { id: item.id } })
       }
     }
