@@ -58,7 +58,7 @@
           <v-col cols="4" class="pr-4">
             <v-chip text-color="white" class="mr-4 fluid">
               <v-icon>mdi-currency-rub</v-icon>
-              6 000.20
+              {{getTotal}}
             </v-chip>
           </v-col>
         </v-row>
@@ -100,6 +100,15 @@
         text: ''
       }
     }),
+    computed: {
+      getTotal() {
+        let sum = 0;
+        this.$store.getters.getBills.forEach((item) => {
+          sum += parseFloat(item.lastRevision.balance_amount);
+        });
+        return sum.toFixed(2);
+      }
+    },
     mounted: function() {
       this.drawer = null;
       this.$store.dispatch('loadBills').catch(this.onError);

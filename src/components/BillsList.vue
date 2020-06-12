@@ -9,8 +9,11 @@
         <v-list-item-content>
           <v-list-item-title v-text="item.name" class="blue-grey--text"></v-list-item-title>
         </v-list-item-content>
+        <v-list-item-content v-if="item.lastRevision">
+          <v-list-item-title v-text="formatDate(item.lastRevision.inserted_at)" class="blue-grey--text"></v-list-item-title>
+        </v-list-item-content>
         <v-chip text-color="white" class="fluid">
-          6 000.20 руб
+          {{item.lastRevision ? item.lastRevision.balance_amount : 0}}
         </v-chip>
     </v-list-item>
 
@@ -30,14 +33,15 @@ export default {
           default: () => []
         }
     },
-    computed: {
-      
-    },
     mounted: function() {
     },
     methods: {
       onClickBill(item) {
         this.$router.push({ name: 'Bill', params: { id: item.id } })
+      },
+      formatDate(dateStr) {
+        let dt = new Date(dateStr);
+        return dt.toLocaleString();
       }
     }
 }
