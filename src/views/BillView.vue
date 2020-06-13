@@ -23,17 +23,20 @@
                     dark
                     multiple
                     >
-                    <v-btn @click="onClickNewRevision">
-                        New revision
+                    <v-btn @click="onClickNewCharge"  title="Charge funds to bill">
+                      <v-icon>mdi-plus-minus</v-icon> Charge
                     </v-btn>
-                    <v-btn title="Transfer to another bill" :disabled="!$store.getters.getLastRevision || $store.getters.getBills.length < 2" @click="onClickTransfer">
-                        Transfer
+                    <v-btn @click="onClickNewRevision" title="Set current bill balance">
+                      <v-icon>mdi-credit-card-clock</v-icon> Revision
+                    </v-btn>
+                    <v-btn title="Transfer funds to another bill" :disabled="!$store.getters.getLastRevision || $store.getters.getBills.length < 2" @click="onClickTransfer">
+                      <v-icon>mdi-transfer-right</v-icon>  Transfer
                     </v-btn>
                     <v-btn @click="onClickDeleteBill" title="Delete this bill">
-                        Delete
+                      <v-icon>mdi-close</v-icon> Delete
                     </v-btn>
                     <v-btn :disabled="!$store.getters.getLastRevision || $store.getters.getRevisions.length === 1" @click="onClickDeclineLastRevision">
-                        Decline last revision
+                      <v-icon>mdi-cancel</v-icon> Decline last revision
                     </v-btn>
                 </v-btn-toggle>
             </v-col>
@@ -42,19 +45,19 @@
         <v-row align="start" justify="start">
             <v-col cols="8">
                 <v-list class="transparent">
-                    <v-list-item>
+                    <v-list-item dense>
                         <v-list-item-title>id</v-list-item-title>
                         <v-list-item-title>{{$store.getters.getCurrentBill.id}}</v-list-item-title>
                     </v-list-item>
-                    <v-list-item v-if="$store.getters.getLastRevision">
+                    <v-list-item v-if="$store.getters.getLastRevision" dense>
                         <v-list-item-title>Last revision date</v-list-item-title>
                         <v-list-item-title>{{formatDate($store.getters.getLastRevision.inserted_at)}}</v-list-item-title>
                     </v-list-item>
-                    <v-list-item v-if="$store.getters.getLastRevision">
+                    <v-list-item v-if="$store.getters.getLastRevision" dense>
                         <v-list-item-title>Last revision amount</v-list-item-title>
                         <v-list-item-title>{{$store.getters.getLastRevision.charge_amount}}</v-list-item-title>
                     </v-list-item>
-                    <v-list-item v-if="$store.getters.getLastRevision">
+                    <v-list-item v-if="$store.getters.getLastRevision" dense>
                         <v-list-item-title>Balance</v-list-item-title>
                         <v-list-item-title :class="{'success--text': $store.getters.getLastRevision.balance_amount > 0, 'red--text': $store.getters.getLastRevision.balance_amount < 0}">{{$store.getters.getLastRevision.balance_amount}}</v-list-item-title>
                     </v-list-item>
@@ -167,6 +170,13 @@ export default {
       onClickNewRevision() {
           this.$router.push({ name: 'Forms', params: { 
             formId: 'addRevision', 
+            billId: this.id,
+            balance: this.$store.getters.getLastRevision ? this.$store.getters.getLastRevision.balance_amount : 0
+          } })
+      },
+      onClickNewCharge() {
+        this.$router.push({ name: 'Forms', params: { 
+            formId: 'chargeFunds', 
             billId: this.id,
             balance: this.$store.getters.getLastRevision ? this.$store.getters.getLastRevision.balance_amount : 0
           } })

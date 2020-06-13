@@ -26,6 +26,21 @@
             required
           ></v-text-field>
         </form>
+        <form v-if="formId === 'chargeFunds'">
+          <h3 class="mb-5">Charge funds</h3>
+          <v-text-field 
+            v-model="chargeFunds.billId"
+            label="Bill ID"
+            readonly
+          ></v-text-field>
+          <v-text-field 
+            v-model="chargeFunds.chargeAmount"
+            :error-messages="chargeFunds.errors.chargeAmount"
+            label="Charge amount"
+            type="number"
+            required
+          ></v-text-field>
+        </form>
         <form v-if="formId === 'addRevision'">
           <h3 class="mb-5">Add new revision</h3>
           <v-text-field 
@@ -34,9 +49,9 @@
             readonly
           ></v-text-field>
           <v-text-field 
-            v-model="addRevision.chargeAmount"
-            :error-messages="addRevision.errors.chargeAmount"
-            label="Charge amount"
+            v-model="addRevision.balanceAmount"
+            :error-messages="addRevision.errors.balanceAmount"
+            label="Bill balance amount"
             type="number"
             required
           ></v-text-field>
@@ -88,12 +103,20 @@ export default {
             initAmount: ''
           }
         },
-        addRevision: {
+        chargeFunds: {
           billId: null,
           balance: null,
           chargeAmount: 0,
           errors: {
             chargeAmount: ''
+          }
+        },
+        addRevision: {
+          billId: null,
+          balance: null,
+          balanceAmount: 0,
+          errors: {
+            balanceAmount: ''
           }
         },
         transfer: {
@@ -115,6 +138,12 @@ export default {
         }
         if (this.formId === 'addRevision') {
           this.addRevision.billId = this.$router.currentRoute.params.billId;
+          this.addRevision.balanceAmount = this.$router.currentRoute.params.balance;
+          this.addRevision.balance = this.$router.currentRoute.params.balance;
+        }
+        if (this.formId === 'chargeFunds') {
+          this.chargeFunds.billId = this.$router.currentRoute.params.billId;
+          this.chargeFunds.balance = this.$router.currentRoute.params.balance;
         }
         if (this.formId === 'transfer') {
           this.transfer.sourceBill = this.$router.currentRoute.params.sourceBill;
@@ -135,7 +164,21 @@ export default {
         }
         if (this.formId === 'addRevision') {
           if (this.revisionValidator()) {
-            await this.$store.dispatch('createRevision', this.addRevision);
+            const diff = parseFloat(this.addRevision.balanceAmount) - parseFloat(this.addRevision.balance);
+            await this.$store.dispatch('createRevision', {
+              billId: this.addRevision.billId,
+              chargeAmount: diff.toFixed(2)
+            });
+          } else {
+            return;
+          }
+        }
+        if (this.formId === 'chargeFunds') {
+          if (this.chargeValidator()) {
+            await this.$store.dispatch('createRevision', {
+              billId: this.chargeFunds.billId,
+              chargeAmount: this.chargeFunds.chargeAmount
+            });
           } else {
             return;
           }
@@ -149,19 +192,36 @@ export default {
         }
         this.$router.push({ name: 'Home' });
       },
-      revisionValidator() {
-        const amount = parseFloat(this.addRevision.chargeAmount);
-        this.addRevision.errors.chargeAmount = '';
+      chargeValidator() {
+        const amount = parseFloat(this.chargeFunds.chargeAmount);
+        this.chargeFunds.errors.chargeAmount = '';
         if (isNaN(amount)) {
-          this.addRevision.errors.chargeAmount = 'Invalid value';
+          this.chargeFunds.errors.chargeAmount = 'Invalid value';
           return false;
         }
-        if (amount < 0 && parseFloat(this.addRevision.balance) <= 0) {
-          this.addRevision.errors.chargeAmount = 'Balance is negative';
+        if (amount < 0 && parseFloat(this.chargeFunds.balance) <= 0) {
+          this.chargeFunds.errors.chargeAmount = 'Balance is negative';
           return false;
         }
-        if (amount < 0 && Math.abs(amount) > parseFloat(this.addRevision.balance)) {
-          this.addRevision.errors.chargeAmount = 'Balance is less than amount';
+        if (amount < 0 && Math.abs(amount) > parseFloat(this.chargeFunds.balance)) {
+          this.chargeFunds.errors.chargeAmount = 'Balance is less than amount';
+          return false;
+        }
+        return true;
+      },
+      revisionValidator() {
+        const amount = parseFloat(this.addRevision.balanceAmount);
+        this.addRevision.errors.balanceAmount = '';
+        if (isNaN(amount)) {
+          this.addRevision.errors.balanceAmount = 'Invalid value';
+          return false;
+        }
+        if (amount < 0) {
+          this.addRevision.errors.balanceAmount = 'Balance could not be negative';
+          return false;
+        }
+        if (parseInt(this.addRevision.balanceAmount * 100) === parseInt(this.addRevision.errors.balance)) {
+          this.addRevision.errors.balanceAmount = 'Balance is the same';
           return false;
         }
         return true;
