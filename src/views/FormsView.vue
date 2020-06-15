@@ -26,6 +26,54 @@
             required
           ></v-text-field>
         </form>
+        <form v-if="formId === 'addBillGroup'">
+          <h3 class="mb-5">Add new bill group</h3>
+          <v-text-field 
+            v-model="addBillGroup.name"
+            :error-messages="addBillGroup.errors.name"
+            counter="100"
+            label="Name"
+            required
+          ></v-text-field>
+          <v-row>
+            <v-col>
+              <v-text-field 
+                v-model="addBillGroup.color"
+                label="Color"
+                readonly
+                required
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-color-picker 
+                v-model="addBillGroup.color" 
+                hide-mode-switch mode="hexa" 
+                :swatches="addBillGroup.swatches"
+                hide-inputs 
+                hide-canvas
+                show-swatches></v-color-picker>
+            </v-col>
+          </v-row>
+          <v-select
+            label="Included bills"
+            v-model="addBillGroup.includedBills"
+            :items="addBillGroup.availableBills"
+            :error-messages="addBillGroup.errors.includedBills"
+            item-text="label"
+            item-value="id"
+            chips
+            multiple
+          ></v-select>
+          <v-select
+            label="Main bill"
+            :disabled="getAddBillGroupIncludedBills.length === 0"
+            v-model="addBillGroup.mainBill"
+            :error-messages="addBillGroup.errors.mainBill"
+            :items="getAddBillGroupIncludedBills"
+            item-text="label"
+            item-value="id"
+          ></v-select>
+        </form>
         <form v-if="formId === 'chargeFunds'">
           <h3 class="mb-5">Charge funds</h3>
           <v-text-field 
@@ -129,8 +177,30 @@ export default {
             targetBill: '',
             transferAmount: ''
           }
+        },
+        addBillGroup: {
+          name: '',
+          color: '#ffffff',
+          swatches: [
+            ['#7E0000', '#686800', '#005500', '#003F3F', '#000053'],
+            ['#550000', '#464600', '#003A00', '#004141', '#2B2B55'],
+            ['#3F2A2A', '#555500', '#2B442B', '#424949', '#0B0B24'],
+          ],
+          includedBills: [],
+          availableBills: [],
+          mainBill: null,
+          errors: {
+            name: '',
+            includedBills: '',
+            mainBill: ''
+          }
         }
     }),
+    computed: {
+      getAddBillGroupIncludedBills() {
+        return this.addBillGroup.includedBills;
+      }
+    },
     mounted: function() {
         this.formId = this.$router.currentRoute.params.formId;
         if (!this.formId) {
@@ -149,6 +219,12 @@ export default {
           this.transfer.sourceBill = this.$router.currentRoute.params.sourceBill;
           this.transfer.balance = this.$router.currentRoute.params.balance;
           this.transfer.bills = this.$router.currentRoute.params.bills.map(item => ({
+            label: item.name + ' (' + item.id + ')',
+            id: item.id
+          }));
+        }
+        if (this.formId === 'addBillGroup') {
+          this.addBillGroup.availableBills = this.$router.currentRoute.params.bills.map(item => ({
             label: item.name + ' (' + item.id + ')',
             id: item.id
           }));
@@ -186,6 +262,13 @@ export default {
         if (this.formId === 'transfer') {
           if (this.transferValidator()) {
             await this.$store.dispatch('transfer', this.transfer);
+          } else {
+            return;
+          }
+        }
+        if (this.formId === 'addBillGroup') {
+          if (this.addBillGroupValidator()) {
+            await this.$store.dispatch('createBillGroup', this.addBillGroup);
           } else {
             return;
           }
@@ -247,6 +330,43 @@ export default {
           return false;
         }
         return true;
+      },
+      addBillGroupValidator() {
+        this.addBillGroup.errors.name = '';
+        this.addBillGroup.errors.includedBills = '';
+        this.addBillGroup.errors.mainBill = '';
+        if (!this.addBillGroup.name) {
+          this.addBillGroup.errors.name = 'Enter name of group';
+          return false;
+        }
+        if (this.addBillGroup.includedBills.length === 0) {
+          this.addBillGroup.errors.includedBills = 'No one bill selected';
+          return false;
+        }
+        if (this.addBillGroup.includedBills.length > 0 && !this.addBillGroup.mainBill) {
+          this.addBillGroup.errors.mainBill = 'Main bill not selected';
+          return false;
+        }
+        return true;
+      }
+    },
+    watch: {
+      "addBillGroup.includedBills": function(val) {
+        if (!Array.isArray(val)) {
+          if (val !== this.addBillGroup.mainBill) {
+            this.addBillGroup.mainBill = null;
+            return;
+          }
+        }
+        if (val.length === 0) {
+          this.addBillGroup.mainBill = null;
+          return;
+        }
+        if (this.addBillGroup.mainBill && !this.addBillGroup.includedBills.includes(this.addBillGroup.mainBill)) {
+          this.addBillGroup.mainBill = null;
+          return;
+        }
+        
       }
     }
 }

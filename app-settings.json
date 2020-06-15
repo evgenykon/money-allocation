@@ -1,4 +1,4 @@
 {
-    "api": "https://effus-apis.herokuapp.com/2.0.0",
-    "api_dev": "http://localhost:5000/2.0.0"
+    "api": "https://effus-apis.herokuapp.com/2.1.0",
+    "api_dev": "http://localhost:5000/2.1.0"
 }

@@ -160,6 +160,31 @@ class Api {
             });
         return this.parseResponse(response);
     }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} name 
+     */
+    async createGroup(token, uid, name, color, includedBills, mainBill) {
+        const response = await this.getAxiosAuth(token, uid)
+            .put('/bill/groups/', {
+                name: name,
+                color: color,
+                included_bills: includedBills,
+                main_bill_id: mainBill
+            });
+        return this.parseResponse(response);
+    }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     */
+    async getGroups(token, uid) {
+        const response = await this.getAxiosAuth(token, uid).get('/bill/groups/', axiosConfig);
+        return this.parseResponse(response);
+    }
 }
 
 export default new Api;

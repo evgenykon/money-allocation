@@ -6,7 +6,9 @@ const BillsStore = {
     state: {
         bills: [],
         currentBill: null,
-        revisions: []
+        revisions: [],
+        groups: [],
+        currentGroup: null
     },
     getters: {
         getBills(state) {
@@ -29,7 +31,7 @@ const BillsStore = {
         setRevisions(state, payload) {
             state.revisions = payload;
         },
-        setCurrent(state, payload) {
+        setCurrentBill(state, payload) {
             state.currentBill = payload;
         }
     },
@@ -46,7 +48,7 @@ const BillsStore = {
          * @param {*} state 
          * @param {*} payload 
          */
-        async setCurrent(state, payload) {
+        async setCurrentBill(state, payload) {
             if (state.getters.getBills.length === 0) {
                 await state.dispatch('loadBills');
             }
@@ -54,7 +56,7 @@ const BillsStore = {
             if (bill.length !== 1) {
                 throw new Error('Current not defined');
             }
-            state.commit('setCurrent', bill[0]);
+            state.commit('setCurrentBill', bill[0]);
         },
 
         /**
@@ -139,6 +141,31 @@ const BillsStore = {
                 payload.sourceBill.id,
                 payload.targetBill,
                 payload.transferAmount
+            );
+        },
+
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async createBillGroup(state, payload) {
+            await Api.createGroup(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.name,
+                payload.color,
+                payload.includedBills,
+                payload.mainBill
+            );
+        },
+
+        /**
+         * @param {*} state 
+         */
+        async loadGroups(state) {
+            await Api.getGroups(
+                state.getters.getToken, 
+                state.getters.getUid
             );
         }
     }

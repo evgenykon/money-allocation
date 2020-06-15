@@ -150,7 +150,7 @@ export default {
         if (!this.id) {
           this.$router.push({ name: 'Home' });
         }
-        this.$store.dispatch('setCurrent', {
+        this.$store.dispatch('setCurrentBill', {
             id: this.id
         })
         .then(() => {

@@ -16,6 +16,16 @@
           {{item.lastRevision ? item.lastRevision.balance_amount : 0}}
         </v-chip>
     </v-list-item>
+    <v-list-item class="blue-grey darken-4">
+        <v-list-item-content>
+          <v-list-item-title>Total</v-list-item-title>
+        </v-list-item-content>
+        <v-list-item-content>
+        </v-list-item-content>
+        <v-chip text-color="white" class="fluid">
+          {{getTotal}}
+        </v-chip>
+    </v-list-item>
 
     <v-list-item v-if="list.length === 0">
         <v-list-item-title>No bills</v-list-item-title>
@@ -42,6 +52,15 @@ export default {
       formatDate(dateStr) {
         let dt = new Date(dateStr);
         return dt.toLocaleString();
+      }
+    },
+    computed: {
+      getTotal() {
+        let sum = 0;
+        this.list.forEach((item) => {
+          sum += parseFloat(item.lastRevision.balance_amount);
+        });
+        return sum.toFixed(2);
       }
     }
 }

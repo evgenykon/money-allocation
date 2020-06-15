@@ -31,13 +31,13 @@
               multiple
               fluid
             >
-              <v-btn title="Add account" @click="onClickAddAccount">
+              <v-btn title="Add bill" @click="onClickAddBill">
                 <v-icon>mdi-account-cash</v-icon>
               </v-btn>
-              <v-btn title="Show chart" :disabled="this.$store.getters.getBills.length === 0">
-                <v-icon>mdi-chart-areaspline</v-icon>
+              <v-btn title="Add bill group" @click="onClickAddBillGroup">
+                <v-icon>mdi-briefcase-variant-outline</v-icon>
               </v-btn>
-              <v-btn title="Autocharge" :disabled="this.$store.getters.getBills.length === 0">
+              <v-btn title="Autocharge" :disabled="true">
                 <v-icon>mdi-cash-multiple</v-icon>
               </v-btn>
             </v-btn-toggle>
@@ -47,19 +47,6 @@
         <v-row align="start" justify="center">
           <v-col cols="12" class="text-left">
             <bill-list :list="this.$store.getters.getBills"></bill-list>
-          </v-col>
-        </v-row>
-
-
-        <v-row align="start" justify="center">
-          <v-col cols="8" class="text-right pt-4">
-            Total
-          </v-col>
-          <v-col cols="4" class="pr-4">
-            <v-chip text-color="white" class="mr-4 fluid">
-              <v-icon>mdi-currency-rub</v-icon>
-              {{getTotal}}
-            </v-chip>
           </v-col>
         </v-row>
 
@@ -95,23 +82,27 @@
     },
     data: () => ({
       drawer: null,
+      loadingFlags: {
+        bills: false
+      },
       errorMessage: {
         flag: false,
         text: ''
       }
     }),
     computed: {
-      getTotal() {
-        let sum = 0;
-        this.$store.getters.getBills.forEach((item) => {
-          sum += parseFloat(item.lastRevision.balance_amount);
-        });
-        return sum.toFixed(2);
-      }
     },
     mounted: function() {
       this.drawer = null;
-      this.$store.dispatch('loadBills').catch(this.onError);
+      this.loadingFlags.bills = true;
+      Promise.all([
+        this.$store.dispatch('loadBills'),
+        this.$store.dispatch('loadGroups')
+      ])
+      .then(() => {
+        this.loadingFlags.bills = true;
+      })
+      .catch(this.onError[0]);
     },
     methods: {
       onError(e) {
@@ -129,8 +120,17 @@
           this.$router.push({ name: 'Home' })
         }).catch(console.error);
       },
-      onClickAddAccount() {
+      onClickAddBill() {
         this.$router.push({ name: 'Forms', params: { formId: 'addBill' } })
+      },
+      onClickAddBillGroup() {
+        this.$router.push({
+          name: 'Forms', 
+          params: { 
+            formId: 'addBillGroup', 
+            bills: this.$store.getters.getBills, 
+          } 
+        })
       }
     }
   }
