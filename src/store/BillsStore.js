@@ -22,6 +22,9 @@ const BillsStore = {
         },
         getLastRevision(state) {
             return state.revisions.length > 0 ? state.revisions[state.revisions.length - 1] : null;
+        },
+        getGroups(state) {
+            return state.groups;
         }
     },
     mutations: {
@@ -33,6 +36,9 @@ const BillsStore = {
         },
         setCurrentBill(state, payload) {
             state.currentBill = payload;
+        },
+        setGroups(state, payload) {
+            state.groups = payload;
         }
     },
     actions: {
@@ -138,8 +144,8 @@ const BillsStore = {
             await Api.transfer(
                 state.getters.getToken, 
                 state.getters.getUid, 
-                payload.sourceBill.id,
-                payload.targetBill,
+                payload.sourceBillId,
+                payload.targetBillId,
                 payload.transferAmount
             );
         },
@@ -149,6 +155,7 @@ const BillsStore = {
          * @param {*} payload 
          */
         async createBillGroup(state, payload) {
+            console.debug('createBillGroup', payload);
             await Api.createGroup(
                 state.getters.getToken, 
                 state.getters.getUid, 
@@ -161,12 +168,30 @@ const BillsStore = {
 
         /**
          * @param {*} state 
+         * @param {*} payload 
+         */
+        async updateBillGroup(state, payload) {
+            console.debug('updateBillGroup', payload);
+            await Api.updateGroup(
+                state.getters.getToken, 
+                state.getters.getUid, 
+                payload.id,
+                payload.name,
+                payload.color,
+                payload.includedBills,
+                payload.mainBill
+            );
+        },
+
+        /**
+         * @param {*} state 
          */
         async loadGroups(state) {
-            await Api.getGroups(
+            const response = await Api.getGroups(
                 state.getters.getToken, 
                 state.getters.getUid
             );
+            state.commit('setGroups', response.groups);
         }
     }
 }

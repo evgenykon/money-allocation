@@ -44,9 +44,13 @@
           </v-col>
         </v-row>
         
-        <v-row align="start" justify="center">
+        <v-row align="start" justify="center" v-for="item in groupsWithBills" :key="item.name">
           <v-col cols="12" class="text-left">
-            <bill-list :list="this.$store.getters.getBills"></bill-list>
+            <bill-list 
+              :list="item.bills" 
+              :color="item.color" 
+              :group="item" 
+              v-on:edit-group="onEditGroup"></bill-list>
           </v-col>
         </v-row>
 
@@ -91,6 +95,38 @@
       }
     }),
     computed: {
+      groupsWithBills() {
+        let groups = {};
+        let bills = {};
+        for (let i in this.$store.getters.getGroups) {
+          groups[this.$store.getters.getGroups[i].id] = this.$store.getters.getGroups[i];
+        }
+        for (let i in this.$store.getters.getBills) {
+          bills[this.$store.getters.getBills[i].id] = this.$store.getters.getBills[i];
+        }
+        for (let groupId in groups) {
+          groups[groupId].bills = [];
+          for (let billId in bills) {
+            if (groups[groupId].included_bills.includes(billId)) {
+              groups[groupId].bills.push(bills[billId]);
+              bills[billId].hasGroup = true;
+            }
+          }
+        }
+        for (let billId in bills) {
+          if (!bills[billId].hasGroup) {
+            if (!groups.noGroup) {
+              groups.noGroup = {
+                name: 'Without group',
+                bills: []
+              };
+            }
+            groups.noGroup.bills.push(bills[billId]);
+          }
+        }
+
+        return groups;
+      }
     },
     mounted: function() {
       this.drawer = null;
@@ -128,6 +164,16 @@
           name: 'Forms', 
           params: { 
             formId: 'addBillGroup', 
+            bills: this.$store.getters.getBills, 
+          } 
+        })
+      },
+      onEditGroup(payload) {
+        this.$router.push({
+          name: 'Forms', 
+          params: { 
+            formId: 'editBillGroup', 
+            group: payload.group,
             bills: this.$store.getters.getBills, 
           } 
         })

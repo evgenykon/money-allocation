@@ -177,6 +177,23 @@ class Api {
         return this.parseResponse(response);
     }
 
+    
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} name 
+     */
+    async updateGroup(token, uid, groupId, name, color, includedBills, mainBill) {
+        const response = await this.getAxiosAuth(token, uid)
+            .post('/bill/group/' + groupId, {
+                name: name,
+                color: color,
+                included_bills: includedBills,
+                main_bill_id: mainBill
+            });
+        return this.parseResponse(response);
+    }
+
     /**
      * @param {*} token 
      * @param {*} uid 
