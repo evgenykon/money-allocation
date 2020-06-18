@@ -166,13 +166,14 @@ class Api {
      * @param {*} uid 
      * @param {*} name 
      */
-    async createGroup(token, uid, name, color, includedBills, mainBill) {
+    async createGroup(token, uid, name, color, includedBills, mainBill, proportion) {
         const response = await this.getAxiosAuth(token, uid)
             .put('/bill/groups/', {
                 name: name,
                 color: color,
                 included_bills: includedBills,
-                main_bill_id: mainBill
+                main_bill_id: mainBill,
+                proportion: proportion
             });
         return this.parseResponse(response);
     }
@@ -183,13 +184,14 @@ class Api {
      * @param {*} uid 
      * @param {*} name 
      */
-    async updateGroup(token, uid, groupId, name, color, includedBills, mainBill) {
+    async updateGroup(token, uid, groupId, name, color, includedBills, mainBill, proportion) {
         const response = await this.getAxiosAuth(token, uid)
             .post('/bill/group/' + groupId, {
                 name: name,
                 color: color,
                 included_bills: includedBills,
-                main_bill_id: mainBill
+                main_bill_id: mainBill,
+                proportion: proportion
             });
         return this.parseResponse(response);
     }
@@ -200,6 +202,17 @@ class Api {
      */
     async getGroups(token, uid) {
         const response = await this.getAxiosAuth(token, uid).get('/bill/groups/', axiosConfig);
+        return this.parseResponse(response);
+    }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} groupId 
+     */
+    async deleteBillGroup(token, uid, groupId) {
+        const response = await this.getAxiosAuth(token, uid)
+            .delete('/bill/group/' + groupId);
         return this.parseResponse(response);
     }
 }

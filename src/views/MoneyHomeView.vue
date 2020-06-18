@@ -50,7 +50,10 @@
               :list="item.bills" 
               :color="item.color" 
               :group="item" 
-              v-on:edit-group="onEditGroup"></bill-list>
+              :proportions="$store.getters.getBillGroupProportions"
+              v-on:edit-group="onEditGroup"
+              v-on:delete-group="onDeleteGroup"
+            ></bill-list>
           </v-col>
         </v-row>
 
@@ -130,17 +133,20 @@
     },
     mounted: function() {
       this.drawer = null;
-      this.loadingFlags.bills = true;
-      Promise.all([
-        this.$store.dispatch('loadBills'),
-        this.$store.dispatch('loadGroups')
-      ])
-      .then(() => {
-        this.loadingFlags.bills = true;
-      })
-      .catch(this.onError[0]);
+      this.loading();
     },
     methods: {
+      loading() {
+        this.loadingFlags.bills = true;
+        Promise.all([
+          this.$store.dispatch('loadBills'),
+          this.$store.dispatch('loadGroups')
+        ])
+        .then(() => {
+          this.loadingFlags.bills = true;
+        })
+        .catch(this.onError[0]);
+      },
       onError(e) {
         this.errorMessage.flag = true;
         this.errorMessage.text = e.message;
@@ -164,7 +170,8 @@
           name: 'Forms', 
           params: { 
             formId: 'addBillGroup', 
-            bills: this.$store.getters.getBills, 
+            bills: this.$store.getters.getBills,
+            proportions: this.$store.getters.getBillGroupProportions
           } 
         })
       },
@@ -174,9 +181,21 @@
           params: { 
             formId: 'editBillGroup', 
             group: payload.group,
-            bills: this.$store.getters.getBills, 
+            proportions: this.$store.getters.getBillGroupProportions,
+            bills: this.$store.getters.getBills 
           } 
         })
+      },
+      async onDeleteGroup(payload) {
+        try {
+          await this.$store.dispatch('deleteBillGroup', {
+              id: payload.id
+          });
+          this.loading();
+        } catch (e) {
+          this.onError(e);
+        }
+        
       }
     }
   }

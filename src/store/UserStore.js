@@ -9,7 +9,8 @@ const UserStore = {
         permissions: null,
         token: null,
         uid: null,
-        email: ''
+        email: '',
+        bill_group_proportions: null
     },
     getters: {
         isConnected: (state) => {
@@ -29,6 +30,9 @@ const UserStore = {
         },
         getPermissions: (state) => {
             return state.permissions;
+        },
+        getBillGroupProportions: (state) => {
+            return state.bill_group_proportions;
         }
     },
     mutations: {
@@ -44,12 +48,19 @@ const UserStore = {
                 if (payload.token) {
                     state.token = payload.token;
                 }
+                if (payload.bill_group_proportions) {
+                    state.bill_group_proportions = payload.bill_group_proportions;
+                }
             } else {
                 state.uid = null;
                 state.email = '';
                 state.token = null;
                 state.permissions = null;
+                state.bill_group_proportions = null;
             }
+        },
+        setBillGroupProportions: (state, proportions) => {
+            state.bill_group_proportions = proportions;
         }
     },
     actions: {

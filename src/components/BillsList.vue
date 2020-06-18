@@ -3,9 +3,23 @@
 
     <v-subheader class="justify-space-between mb-3" :style="'background-color: ' + color" rounded dense>
       {{group.name}}
-      <v-btn v-if="group.id" text small title="Edit group" @click="oClickEditGroupBtn">
-        <v-icon>mdi-briefcase-edit-outline</v-icon>
-      </v-btn>
+        <div class="bz">
+          <v-progress-circular
+          :title="getProportion + '% of all incoming funds'"
+          :value="getProportion"
+          class="mr-3"
+          color="lime"
+        >
+          {{getProportion}}
+        </v-progress-circular>
+        <v-btn v-if="group.id" text small title="Edit group" class="mx-0" @click="oClickEditGroupBtn">
+          <v-icon>mdi-briefcase-edit-outline</v-icon>
+        </v-btn>
+        <v-btn v-if="group.id" text small title="Delete group" @click="onClickDeleteGroup">
+          <v-icon>mdi-delete-alert-outline</v-icon>
+        </v-btn>
+      </div>
+      
       
     </v-subheader>
     <v-list-item v-for="item in list" :key="item.name"  @click="onClickBill(item)">
@@ -55,6 +69,10 @@ export default {
         group: {
           type: Object,
           default: () => {}
+        },
+        proportions: {
+          type: Object,
+          default: () => {}
         }
     },
     mounted: function() {
@@ -71,6 +89,11 @@ export default {
         this.$emit('edit-group', {
           group: this.group
         })
+      },
+      onClickDeleteGroup() {
+        this.$emit('delete-group', {
+          id: this.group.id
+        });
       }
     },
     computed: {
@@ -80,6 +103,14 @@ export default {
           sum += parseFloat(item.lastRevision.balance_amount);
         });
         return sum.toFixed(2);
+      },
+      getProportion() {
+        for (let i in this.proportions) {
+          if (i === this.group.id) {
+            return this.proportions[i];
+          }
+        }
+        return 0;
       }
     }
 }

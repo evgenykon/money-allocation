@@ -155,14 +155,14 @@ const BillsStore = {
          * @param {*} payload 
          */
         async createBillGroup(state, payload) {
-            console.debug('createBillGroup', payload);
             await Api.createGroup(
                 state.getters.getToken, 
                 state.getters.getUid, 
                 payload.name,
                 payload.color,
                 payload.includedBills,
-                payload.mainBill
+                payload.mainBill,
+                payload.proportion
             );
         },
 
@@ -171,16 +171,17 @@ const BillsStore = {
          * @param {*} payload 
          */
         async updateBillGroup(state, payload) {
-            console.debug('updateBillGroup', payload);
-            await Api.updateGroup(
+            const result = await Api.updateGroup(
                 state.getters.getToken, 
                 state.getters.getUid, 
                 payload.id,
                 payload.name,
                 payload.color,
                 payload.includedBills,
-                payload.mainBill
+                payload.mainBill,
+                payload.proportion
             );
+            state.commit('setBillGroupProportions', result.bill_group_proportions);
         },
 
         /**
@@ -192,6 +193,15 @@ const BillsStore = {
                 state.getters.getUid
             );
             state.commit('setGroups', response.groups);
+            state.commit('setBillGroupProportions', response.bill_group_proportions);
+        },
+
+        async deleteBillGroup(state, payload) {
+            await Api.deleteBillGroup(
+                state.getters.getToken, 
+                state.getters.getUid,
+                payload.id
+            );
         }
     }
 }

@@ -48,6 +48,46 @@
             item-text="label"
             item-value="id"
         ></v-select>
+        <v-row>
+            <v-col>
+                <v-text-field 
+                    v-model="proportion"
+                    :error-messages="errors.proportion"
+                    type="number"
+                    :max="100-getProportionsOtherGroups"
+                    @click="proportion=''"
+                    label="Proportion %"
+                    required
+                ></v-text-field>
+            </v-col>
+            <v-col style="position: relative;">
+                
+                <!-- current -->
+                <div style="position: absolute; top: 1.6rem; left: 1.6rem;">
+                    <v-progress-circular
+                        :rotate="getRotateOffset"
+                        size="100"
+                        width="15"
+                        :value="proportion ? proportion : 0"
+                        :color="getProportionColor"
+                        >
+                        {{ proportion ? proportion : 0 }} %
+                    </v-progress-circular>
+                </div>
+
+                <!-- all -->
+                <div style="position: absolute; top: 0rem; left: 0rem;">
+                    <v-progress-circular
+                        rotate="0"
+                        size="150"
+                        width="15"
+                        :value="getProportionsOtherGroups"
+                        color="secondary"
+                        >
+                    </v-progress-circular>
+                </div>
+            </v-col> 
+        </v-row>
     </form>
 </template>
 
@@ -66,10 +106,13 @@ export default {
         includedBills: [],
         availableBills: [],
         mainBill: null,
+        allProportions: {},
+        proportion: 0,
         errors: {
             name: '',
             includedBills: '',
-            mainBill: ''
+            mainBill: '',
+            proportion: ''
         }
     }),
     mounted() {
@@ -79,12 +122,16 @@ export default {
           })
         );
         if (this.$router.currentRoute.params.group && this.$router.currentRoute.params.group.id) {
-            console.debug('this.$router.currentRoute.params', this.$router.currentRoute.params.group);
+            console.debug('this.$router.currentRoute.params', this.$router.currentRoute.params);
             this.id = this.$router.currentRoute.params.group.id;
             this.name = this.$router.currentRoute.params.group.name;
             this.color = this.$router.currentRoute.params.group.color;
             this.includedBills = this.$router.currentRoute.params.group.included_bills;
             this.mainBill = this.$router.currentRoute.params.group.main_bill_id;
+        }
+        this.allProportions = this.$router.currentRoute.params.proportions;
+        if (this.id && this.allProportions && this.allProportions[this.id]) {
+            this.proportion = this.allProportions[this.id];
         }
         FormEventBus.$on('run-submit', async () => {
             if (this.validate()) {
@@ -95,6 +142,27 @@ export default {
     computed: {
       getAddBillGroupIncludedBills() {
         return this.includedBills ? this.includedBills : [];
+      },
+      getProportionsOtherGroups() {
+          let n = 0;
+          for (let i in this.allProportions) {
+
+              
+              if (i !== this.id) {
+                  n += parseFloat(this.allProportions[i]);
+              }
+              console.debug('getProportionsOtherGroups', this.id, i, i !== this.id, n);
+          }
+          return n;
+      },
+      getRotateOffset() {
+          return this.getProportionsOtherGroups / 100 * 360;
+      },
+      getProportionColor() {
+          return this.getProportionSum <= 100 ? 'primary' : 'red';
+      },
+      getProportionSum() {
+          return parseFloat(this.getProportionsOtherGroups) + parseFloat(this.proportion);
       }
     },
     beforeDestroy() {
@@ -110,6 +178,7 @@ export default {
                         color: this.color,
                         includedBills: this.includedBills,
                         mainBill: this.mainBill,
+                        proportion: this.proportion
                     });
                 } else {
                     await this.$store.dispatch('createBillGroup', {
@@ -117,9 +186,10 @@ export default {
                         color: this.color,
                         includedBills: this.includedBills,
                         mainBill: this.mainBill,
+                        proportion: this.proportion
                     });
                 }
-                
+
                 FormEventBus.$emit('submit-complete');
             } catch(e) {
                 FormEventBus.$emit('submit-error', e);
@@ -139,6 +209,18 @@ export default {
             }
             if (this.includedBills.length > 0 && !this.mainBill) {
                 this.errors.mainBill = 'Main bill not selected';
+                return false;
+            }
+            if (this.getProportionSum > 100) {
+                this.errors.proportion = 'Total proportion greater than 100';
+                return false;
+            }
+            if (this.proportion < 0) {
+                this.errors.proportion = 'Proportion less than 100';
+                return false;
+            }
+            if (isNaN(this.proportion)) {
+                this.errors.proportion = 'Proportion is not a number';
                 return false;
             }
             return true;
