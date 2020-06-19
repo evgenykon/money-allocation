@@ -22,6 +22,8 @@
 
         <form-bill-group v-if="formId === 'editBillGroup'"></form-bill-group>
 
+        <form-autocharge v-if="formId === 'autoCharge'"></form-autocharge>
+
       </v-container>
     </v-main>
 
@@ -49,10 +51,11 @@ import FormChargeFunds from '../components/forms/FormChargeFunds.vue';
 import FormAddRevision from '../components/forms/FormAddRevision.vue';
 import FormTransfer from '../components/forms/FormTransfer.vue';
 import FormBillGroup from '../components/forms/FormBillGroup.vue';
+import FormAutocharge from '../components/forms/FormAutocharge.vue';
 
 export default {
     components: {
-      FormAddNewBill, FormChargeFunds, FormAddRevision, FormTransfer, FormBillGroup
+      FormAddNewBill, FormChargeFunds, FormAddRevision, FormTransfer, FormBillGroup, FormAutocharge
     },
     data: () => ({
         formId: null,

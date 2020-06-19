@@ -37,7 +37,7 @@
               <v-btn title="Add bill group" @click="onClickAddBillGroup">
                 <v-icon>mdi-briefcase-variant-outline</v-icon>
               </v-btn>
-              <v-btn title="Autocharge" :disabled="true">
+              <v-btn title="Autocharge" :disabled="!isAllowAutocharge" @click="onClickAutocharge">
                 <v-icon>mdi-cash-multiple</v-icon>
               </v-btn>
             </v-btn-toggle>
@@ -129,6 +129,9 @@
         }
 
         return groups;
+      },
+      isAllowAutocharge() {
+        return Object.keys(this.$store.getters.getBillGroupProportions).length > 0;
       }
     },
     mounted: function() {
@@ -195,7 +198,17 @@
         } catch (e) {
           this.onError(e);
         }
-        
+      },
+      onClickAutocharge() {
+        this.$router.push({
+          name: 'Forms', 
+          params: { 
+            formId: 'autoCharge', 
+            proportions: this.$store.getters.getBillGroupProportions,
+            groups: this.groupsWithBills,
+            allBills: this.$store.getters.getBills 
+          } 
+        })
       }
     }
   }

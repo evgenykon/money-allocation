@@ -146,12 +146,9 @@ export default {
       getProportionsOtherGroups() {
           let n = 0;
           for (let i in this.allProportions) {
-
-              
               if (i !== this.id) {
                   n += parseFloat(this.allProportions[i]);
               }
-              console.debug('getProportionsOtherGroups', this.id, i, i !== this.id, n);
           }
           return n;
       },
