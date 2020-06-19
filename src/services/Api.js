@@ -3,9 +3,6 @@
 import axios from 'axios';
 import crypto from 'crypto';
 
-const axiosConfig = {
-    headers: {'Access-Control-Allow-Origin': '*'}
-};
 const AppSettings = require('../../app-settings.json');
 
 const hashSomething = (str) => {
@@ -23,7 +20,8 @@ class Api {
             this.url = AppSettings.api;
         }
         axios.defaults.baseURL = this.url;
-        console.debug('Api.url', this.url);
+        axios.defaults.timeout = 5000;
+        axios.defaults.headers = {'Access-Control-Allow-Origin': '*'};
     }
     getAuthToken(token, uid) {
         const timestamp = new Date().getTime();
@@ -37,12 +35,16 @@ class Api {
         return axios.create({
             baseURL: this.url,
             timeout: 5000,
-            headers: {'Authorization': 'token ' + this.getAuthToken(token, uid)}
+            withCredentials: false,
+            headers: {
+                'Authorization': 'token ' + this.getAuthToken(token, uid), 
+                'Access-Control-Allow-Origin': '*'
+            }
         });
     }
 
     async checkConnection() {
-        const response = await axios.get('/', axiosConfig);
+        const response = await axios.get('/');
         return response.data ? response.data.result : false;
     }
 
@@ -62,7 +64,7 @@ class Api {
         if (!token || !uid) {
             throw Error('Unauthorized');
         }
-        const response = await this.getAxiosAuth(token, uid).get('/user/me', axiosConfig);
+        const response = await this.getAxiosAuth(token, uid).get('/user/me');
         return this.parseResponse(response);
     }
 
@@ -70,7 +72,7 @@ class Api {
         if (!form.email || !form.name || !form.password) {
             throw Error('Some form fields is empty');
         }
-        const response = await axios.put('/user/register', form, axiosConfig);
+        const response = await axios.put('/user/register', form);
         return this.parseResponse(response);
     }
 
@@ -78,7 +80,7 @@ class Api {
         if (!form.email || !form.password) {
             throw Error('Some form fields is empty');
         }
-        const response = await axios.post('/user/login', form, axiosConfig);
+        const response = await axios.post('/user/login', form);
         return this.parseResponse(response);
     }
 
@@ -87,7 +89,7 @@ class Api {
      * @param {*} uid 
      */
     async loadBills(token, uid) {
-        const response = await this.getAxiosAuth(token, uid).get('/bills', axiosConfig);
+        const response = await this.getAxiosAuth(token, uid).get('/bills');
         return this.parseResponse(response);
     }
 
@@ -132,7 +134,7 @@ class Api {
      * @param {*} fromDate 
      */
     async loadRevisions(token, uid, billId, fromDate) {
-        const response = await this.getAxiosAuth(token, uid).get('/bill/' + billId + '/revisions/' + fromDate, axiosConfig);
+        const response = await this.getAxiosAuth(token, uid).get('/bill/' + billId + '/revisions/' + fromDate);
         return this.parseResponse(response);
     }
 
@@ -201,7 +203,7 @@ class Api {
      * @param {*} uid 
      */
     async getGroups(token, uid) {
-        const response = await this.getAxiosAuth(token, uid).get('/bill/groups/', axiosConfig);
+        const response = await this.getAxiosAuth(token, uid).get('/bill/groups/');
         return this.parseResponse(response);
     }
 
