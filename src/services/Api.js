@@ -70,7 +70,7 @@ class Api {
         if (!form.email || !form.name || !form.password) {
             throw Error('Some form fields is empty');
         }
-        const response = await axios.put('/user/register', form);
+        const response = await axios.put('/user/register', form, axiosConfig);
         return this.parseResponse(response);
     }
 
@@ -78,7 +78,7 @@ class Api {
         if (!form.email || !form.password) {
             throw Error('Some form fields is empty');
         }
-        const response = await axios.post('/user/login', form);
+        const response = await axios.post('/user/login', form, axiosConfig);
         return this.parseResponse(response);
     }
 
