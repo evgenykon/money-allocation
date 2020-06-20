@@ -57,6 +57,8 @@
           </v-col>
         </v-row>
 
+        <line-chart :datasets="chartDatasets"></line-chart>
+
       </v-container>
     </v-main>
     <v-footer app>
@@ -78,10 +80,11 @@
   import {mixin as VueTimers} from 'vue-timers';
   import SideBarItem from '../components/SideBarItem.vue';
   import BillList from '../components/BillsList.vue';
+  import LineChart from '../components/LineChart.vue';
 
   export default {
     components: {
-        SideBarItem, BillList
+        SideBarItem, BillList, LineChart
     },
     mixins: [VueTimers],
     timers: {
@@ -127,11 +130,25 @@
             groups.noGroup.bills.push(bills[billId]);
           }
         }
-
         return groups;
       },
       isAllowAutocharge() {
         return Object.keys(this.$store.getters.getBillGroupProportions).length > 0;
+      },
+      chartDatasets() {
+
+        return [
+          {
+              backgroundColor: 'rdga(22, 22, 22, 0.1)',
+              borderColor: '#ffffff',
+              label: 'First dataset',
+              data: [0, 20, 40, 50]
+          },
+          {
+              label: 'Sec dataset',
+              data: [10, 20, 40, 50]
+          }
+        ];
       }
     },
     mounted: function() {
@@ -143,7 +160,8 @@
         this.loadingFlags.bills = true;
         Promise.all([
           this.$store.dispatch('loadBills'),
-          this.$store.dispatch('loadGroups')
+          this.$store.dispatch('loadGroups'),
+          this.$store.dispatch('loadRevisionHistory'),
         ])
         .then(() => {
           this.loadingFlags.bills = true;

@@ -1,37 +1,32 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import IntroView from '../views/IntroView.vue';
-import AuthView from '../views/AuthView.vue';
-import MoneyHomeView from '../views/MoneyHomeView.vue';
-import FormsView from '../views/FormsView.vue';
-import BillView from '../views/BillView.vue';
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: IntroView
+    component: () => import('../views/IntroView.vue')
   },
   {
     path: '/auth',
     name: 'Auth',
-    component: AuthView
+    component: () => import('../views/AuthView.vue')
   },
   {
     path: '/money',
     name: 'Money',
-    component: MoneyHomeView
+    component: () => import('../views/MoneyHomeView.vue')
   },
   {
     path: '/forms',
     name: 'Forms',
-    component: FormsView
+    component: () => import('../views/FormsView.vue')
   },
   {
     path: '/bill',
     name: 'Bill',
-    component: BillView
+    component: () => import('../views/BillView.vue')
   }
 ]
 
