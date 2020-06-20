@@ -6,7 +6,8 @@ const BillsStore = {
     state: {
         bills: [],
         currentBill: null,
-        revisions: [],
+        billRevisions: [],
+        allRevisions: [],
         groups: [],
         currentGroup: null
     },
@@ -17,22 +18,28 @@ const BillsStore = {
         getCurrentBill(state) {
             return state.currentBill;
         },
-        getRevisions(state) {
-            return state.revisions;
+        getBillRevisions(state) {
+            return state.billRevisions;
         },
         getLastRevision(state) {
-            return state.revisions.length > 0 ? state.revisions[state.revisions.length - 1] : null;
+            return state.billRevisions.length > 0 ? state.billRevisions[state.billRevisions.length - 1] : null;
         },
         getGroups(state) {
             return state.groups;
+        },
+        getAllRevisions(state) {
+            return state.allRevisions;
         }
     },
     mutations: {
         setBills(state, payload) {
             state.bills = payload;
         },
-        setRevisions(state, payload) {
-            state.revisions = payload;
+        setBillRevisions(state, payload) {
+            state.billRevisions = payload;
+        },
+        setAllRevisions(state, payload) {
+            state.allRevisions = payload;
         },
         setCurrentBill(state, payload) {
             state.currentBill = payload;
@@ -42,8 +49,9 @@ const BillsStore = {
         }
     },
     actions: {
+        
         /**
-         * 
+         * @param {*} state 
          */
         async loadBills(state) {
             const response = await Api.loadBills(state.getters.getToken, state.getters.getUid);
@@ -103,9 +111,18 @@ const BillsStore = {
          * @param {*} state 
          * @param {*} payload 
          */
-        async loadRevisions(state, payload) {
-            const response = await Api.loadRevisions(state.getters.getToken, state.getters.getUid, payload.billId, '2020-06-01');
-            state.commit('setRevisions', response.revisions);
+        async loadBillRevisions(state, payload) {
+            const response = await Api.loadBillRevisions(state.getters.getToken, state.getters.getUid, payload.billId, '2020-06-01');
+            state.commit('setBillRevisions', response.revisions);
+        },
+
+        /**
+         * @param {*} state 
+         * @param {*} payload 
+         */
+        async loadAllRevisions(state, payload) {
+            const response = await Api.loadAllRevisions(state.getters.getToken, state.getters.getUid, '2020-06-01');
+            state.commit('setAllRevisions', response.revisions);
         },
 
         /**
@@ -131,7 +148,7 @@ const BillsStore = {
                 state.getters.getUid, 
                 payload.billId
             );
-            await state.dispatch('loadRevisions', {
+            await state.dispatch('loadBillRevisions', {
                 billId: payload.billId
             });
         },

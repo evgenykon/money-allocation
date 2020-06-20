@@ -35,7 +35,7 @@
                     <v-btn @click="onClickDeleteBill" title="Delete this bill">
                       <v-icon>mdi-close</v-icon> Delete
                     </v-btn>
-                    <v-btn :disabled="!$store.getters.getLastRevision || $store.getters.getRevisions.length === 1" @click="onClickDeclineLastRevision">
+                    <v-btn :disabled="!$store.getters.getLastRevision || $store.getters.getBillRevisions.length === 1" @click="onClickDeclineLastRevision">
                       <v-icon>mdi-cancel</v-icon> Decline last revision
                     </v-btn>
                 </v-btn-toggle>
@@ -65,7 +65,7 @@
             </v-col>
         </v-row>
 
-        <v-row align="start" justify="center" v-if="$store.getters.getRevisions.length > 1">
+        <v-row align="start" justify="center" v-if="$store.getters.getBillRevisions.length > 1">
           <v-col>
           <v-card
             class="mt-4 mx-auto"
@@ -100,7 +100,7 @@
                   <v-list-item-title>charged</v-list-item-title>
                   <v-list-item-title>balance</v-list-item-title>
               </v-list-item>
-              <v-list-item dense v-for="item in $store.getters.getRevisions" :key="item.id" >
+              <v-list-item dense v-for="item in $store.getters.getBillRevisions" :key="item.id" >
                   <v-list-item-title>{{item.id}}</v-list-item-title>
                   <v-list-item-title>{{formatDate(item.inserted_at)}}</v-list-item-title>
                   <v-list-item-title>{{item.charge_amount}}</v-list-item-title>
@@ -139,10 +139,10 @@ export default {
     }),
     computed: {
       chartValues() {
-        return this.$store.getters.getRevisions.map(item => parseFloat(item.balance_amount));
+        return this.$store.getters.getBillRevisions.map(item => parseFloat(item.balance_amount));
       },
       chartLabels() {
-        return this.$store.getters.getRevisions.map(item => item.balance_amount);
+        return this.$store.getters.getBillRevisions.map(item => item.balance_amount);
       }
     },
     mounted: function() {
@@ -157,7 +157,7 @@ export default {
             if (!this.$store.getters.getCurrentBill) {
                 this.$router.push({ name: 'Home' });
             }
-            this.$store.dispatch('loadRevisions', {
+            this.$store.dispatch('loadBillRevisions', {
                 billId: this.id
             }).catch(this.onError);
         })

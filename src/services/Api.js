@@ -133,8 +133,18 @@ class Api {
      * @param {*} billId 
      * @param {*} fromDate 
      */
-    async loadRevisions(token, uid, billId, fromDate) {
+    async loadBillRevisions(token, uid, billId, fromDate) {
         const response = await this.getAxiosAuth(token, uid).get('/bill/' + billId + '/revisions/' + fromDate);
+        return this.parseResponse(response);
+    }
+
+    /**
+     * @param {*} token 
+     * @param {*} uid 
+     * @param {*} fromDate 
+     */
+    async loadAllRevisions(token, uid, fromDate) {
+        const response = await this.getAxiosAuth(token, uid).get('/bills/revisions/' + fromDate);
         return this.parseResponse(response);
     }
 
