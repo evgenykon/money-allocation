@@ -57,7 +57,7 @@
           </v-col>
         </v-row>
 
-        <line-chart :datasets="chartDatasets"></line-chart>
+        <line-chart v-if="chart.labels.length > 0" :datasets="chart.dataset" :xLabels="chart.labels"></line-chart>
 
       </v-container>
     </v-main>
@@ -81,6 +81,9 @@
   import SideBarItem from '../components/SideBarItem.vue';
   import BillList from '../components/BillsList.vue';
   import LineChart from '../components/LineChart.vue';
+  import ChartHelper from '../components/ChartHelper.js';
+
+  const chartHelper = new ChartHelper();
 
   export default {
     components: {
@@ -98,6 +101,10 @@
       errorMessage: {
         flag: false,
         text: ''
+      },
+      chart: {
+        dataset: [],
+        labels: []
       }
     }),
     computed: {
@@ -134,21 +141,6 @@
       },
       isAllowAutocharge() {
         return Object.keys(this.$store.getters.getBillGroupProportions).length > 0;
-      },
-      chartDatasets() {
-
-        return [
-          {
-              backgroundColor: 'rdga(22, 22, 22, 0.1)',
-              borderColor: '#ffffff',
-              label: 'First dataset',
-              data: [0, 20, 40, 50]
-          },
-          {
-              label: 'Sec dataset',
-              data: [10, 20, 40, 50]
-          }
-        ];
       }
     },
     mounted: function() {
@@ -161,10 +153,13 @@
         Promise.all([
           this.$store.dispatch('loadBills'),
           this.$store.dispatch('loadGroups'),
-          this.$store.dispatch('loadRevisionHistory'),
+          this.$store.dispatch('loadAllRevisions'),
         ])
         .then(() => {
           this.loadingFlags.bills = true;
+          chartHelper.generateChartByDates(this.$store.getters.getAllRevisions);
+          this.chart.dataset = chartHelper.getDataset();
+          this.chart.labels = chartHelper.getLabels();
         })
         .catch(this.onError[0]);
       },

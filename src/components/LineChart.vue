@@ -8,7 +8,7 @@
 import {Chart} from 'chart.js';
 
 export default {
-    props: ['datasets'],
+    props: ['datasets', 'xLabels'],
     data: () => ({
         context: null,
         config: {
@@ -27,14 +27,12 @@ export default {
                         data: [10, 20, 40, 50]
                     },
                 ],*/
-                labels: ['January', 'February', 'March', 'April']
+                labels: []
             },
             options: {
                 scales: {
                     yAxes: [{
-                        ticks: {
-                            stepSize: 5
-                        }
+                        stacked: true
                     }]
                 }
             }
@@ -42,8 +40,8 @@ export default {
     }),
     mounted() {
         this.config.data.datasets = this.datasets;
+        this.config.data.labels = this.xLabels;
         this.context = this.$refs.canvas.getContext('2d');
-        console.debug('this.$refs.canvas', this.$refs);
         new Chart(this.context, this.config);
     }
 }
