@@ -120,7 +120,7 @@ const BillsStore = {
          * @param {*} state 
          * @param {*} payload 
          */
-        async loadAllRevisions(state, payload) {
+        async loadAllRevisions(state) {
             const response = await Api.loadAllRevisions(state.getters.getToken, state.getters.getUid, '2020-06-01');
             state.commit('setAllRevisions', response.revisions);
         },
