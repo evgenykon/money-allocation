@@ -9,7 +9,7 @@
     "dev": "vue-cli-service serve"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "chart.js": "^2.9.3",
     "core-js": "^3.6.5",
     "crypto": "^1.0.1",
